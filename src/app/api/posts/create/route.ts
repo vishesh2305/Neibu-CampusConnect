@@ -7,7 +7,6 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 export async function POST(req: Request) {
-  // 1. Authenticate the user
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return NextResponse.json(
@@ -17,8 +16,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    // 2. Parse the request body
-    const { content } = await req.json();
+
+    const { content, groupId } = await req.json();
     if (!content || typeof content !== "string" || content.trim().length === 0) {
       return NextResponse.json(
         { message: "Post content is required." },
@@ -30,14 +29,30 @@ export async function POST(req: Request) {
     const client = await clientPromise;
     const db = client.db();
 
+    if(groupId){
+      if(!ObjectId.isValid(groupId)){
+        return NextResponse.json({message: "Invalid Group ID"}, {status: 400});
+      }
+      const membership = await db.collection('group_members').findOne({
+        groupId: new ObjectId(groupId),
+        userId: new ObjectId(session.user.id),
+      });
+      if(!membership){
+        return NextResponse.json({ message: "You are not a member of this group." }, { status: 403 });
+      }
+    }
+
     // 4. Create the new post document
-    const newPost = {
-      content: content.trim(),
-      authorId: new ObjectId(session.user.id), // Link the post to the user
-      authorName: session.user.name,
-      authorImage: session.user.image, // We'll add this to the session later
-      createdAt: new Date(),
-    };
+const newPost = {
+  content: content.trim(),
+  authorId: new ObjectId(session.user.id),
+  authorName: session.user.name,
+  authorImage: session.user.image,
+  createdAt: new Date(),
+  ...(groupId && { groupId: new ObjectId(groupId) }),
+};
+
+
 
     // 5. Insert the document into the 'posts' collection
     const result = await db.collection("posts").insertOne(newPost);

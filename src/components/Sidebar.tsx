@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, UserIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 const navLinks = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+    { name: 'Groups', href: '/groups', icon: UsersIcon },
   { name: 'Profile', href: '/profile/edit', icon: UserIcon },
 ];
 
@@ -16,7 +17,7 @@ function classNames(...classes: string[]) {
 export default function Sidebar() {
   const pathname = usePathname();
 
-  return (
+return (
     <div className="flex flex-col h-full bg-gray-950 p-4 border-r border-gray-800">
       <nav className="flex-1 space-y-2">
         {navLinks.map((item) => (
@@ -24,7 +25,7 @@ export default function Sidebar() {
             key={item.name}
             href={item.href}
             className={classNames(
-              pathname === item.href
+              pathname.startsWith(item.href) // Use startsWith for active state on sub-pages
                 ? 'bg-blue-600 text-white'
                 : 'text-gray-400 hover:bg-gray-800 hover:text-white',
               'group flex items-center px-3 py-2 text-sm font-medium rounded-md'

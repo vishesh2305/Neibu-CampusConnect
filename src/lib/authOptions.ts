@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
-          image: user.image,
+          image: user.image, // Ensure image is returned on login
         };
       }
     }),
@@ -50,23 +50,29 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
   },
   callbacks: {
+    // This callback is called whenever a JWT is created or updated.
     jwt: async ({ token, user, trigger, session }) => {
+      // On initial sign-in, add user properties to the token
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.picture = user.image;
       }
-      if(trigger === "update" && session?.user){
+
+      // On session update (e.g., after profile edit), add the new data to the token
+      if (trigger === "update" && session?.user) {
         token.name = session.user.name;
         token.picture = session.user.image;
       }
       return token;
     },
+    // This callback is called whenever a session is checked.
     session: async ({ session, token }) => {
-      if (token && session.user) {
+      // Pass properties from the token to the client-side session object
+      if (token) {
         session.user.id = token.id as string;
-        session.user.name = token.name;
-        session.user.image = token.picture;
+        session.user.name = token.name as string;
+        session.user.image = token.picture as string;
       }
       return session;
     },

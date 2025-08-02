@@ -3,28 +3,30 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function CreatePost() {
+export default function CreatePost({ groupId }: { groupId?: string }) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!content.trim()) {
       setError("Post content cannot be empty.");
       return;
     }
+
     setLoading(true);
     setError("");
 
     try {
+      const body = JSON.stringify({ content, groupId });
+
       const res = await fetch("/api/posts/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content }),
+        headers: { "Content-Type": "application/json" },
+        body,
       });
 
       if (res.ok) {
@@ -34,8 +36,9 @@ export default function CreatePost() {
         const data = await res.json();
         setError(data.message || "Failed to create post.");
       }
-    } catch {
-      setError("An error occurred. Please try again.");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError("An error occurred: " + errorMessage);
     } finally {
       setLoading(false);
     }
@@ -47,7 +50,7 @@ export default function CreatePost() {
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="What's on your mind?"
+          placeholder={groupId ? "Post to the group..." : "What's on your mind?"}
           className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white resize-none"
           rows={3}
         />

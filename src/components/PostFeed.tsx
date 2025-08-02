@@ -2,14 +2,22 @@ import clientPromise from "@/lib/mongodb";
 import Post, { PostProps } from "./Post";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
-import { ObjectId } from "mongodb";
+import { ObjectId, Document } from "mongodb";
 
-async function getPosts(userId?: string) {
+async function getPosts(userId?: string, groupId?: string) {
   try {
     const client = await clientPromise;
     const db = client.db();
 
+    const matchStage: Document = {};
+    if (groupId) {
+      matchStage.groupId = new ObjectId(groupId);
+    } else {
+      matchStage.groupId = { $exists: false };
+    }
+
     const aggregationPipeline = [
+      { $match: matchStage },
       { $sort: { createdAt: -1 } },
       {
         $lookup: {
@@ -19,7 +27,7 @@ async function getPosts(userId?: string) {
           as: "authorDetails",
         },
       },
-      { $unwind: "$authorDetails" }, 
+      { $unwind: "$authorDetails" },
       {
         $lookup: {
           from: "likes",
@@ -28,17 +36,19 @@ async function getPosts(userId?: string) {
           as: "likesData",
         },
       },
-
       {
         $addFields: {
           likesCount: { $size: "$likesData" },
           commentsCount: { $ifNull: ["$commentsCount", 0] },
-          isLiked: userId ? { $in: [new ObjectId(userId), "$likesData.userId"] } : false,
+          isLiked: userId
+            ? {
+                $in: [new ObjectId(userId), "$likesData.userId"],
+              }
+            : false,
           authorName: "$authorDetails.name",
           authorImage: "$authorDetails.image",
         },
       },
-
       {
         $project: {
           likesData: 0,
@@ -52,18 +62,18 @@ async function getPosts(userId?: string) {
       .aggregate(aggregationPipeline)
       .toArray();
 
-    return JSON.parse(JSON.stringify(posts));
+    return JSON.parse(JSON.stringify(posts)) as PostProps[];
   } catch (error) {
     console.error("Error fetching posts:", error);
     return [];
   }
 }
 
-export default async function PostFeed() {
+export default async function PostFeed({ groupId }: { groupId?: string }) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id ?? undefined;
+  const userId = session?.user?.id;
 
-  const posts: PostProps[] = await getPosts(userId);
+  const posts = await getPosts(userId, groupId);
 
   return (
     <div className="space-y-4">
@@ -71,7 +81,9 @@ export default async function PostFeed() {
         <Post key={post._id} post={post} />
       ))}
       {posts.length === 0 && (
-        <p className="text-center text-gray-500">No posts yet. Be the first!</p>
+        <p className="text-center text-gray-500">
+          No posts here yet. Start the conversation!
+        </p>
       )}
     </div>
   );

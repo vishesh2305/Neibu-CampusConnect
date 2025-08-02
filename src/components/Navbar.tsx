@@ -42,7 +42,13 @@ export default function Navbar() {
       </button>
       {/* Add Avatar */}
       <Link href="/profile/edit">
-        <Image height={10} width={10} src={session.user?.image || '/default-avatar.png'} alt="User avatar" className="h-8 w-8 rounded-full object-cover" />
+<Image
+  src={session.user?.image || '/default-avatar.png'}
+  alt="User avatar"
+  width={32}
+  height={32}
+  className="h-8 w-8 rounded-full object-cover"
+/>
       </Link>
     </>
   )}
