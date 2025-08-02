@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import Image from "next/image";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -30,27 +31,22 @@ export default function Navbar() {
         </svg>
         <span className="ml-2 text-lg font-bold">CampusConnect</span>
       </Link>
-      <nav className="ml-auto flex items-center gap-4 sm:gap-6">
-        {session && (
-          <>
-            <span className="text-sm text-gray-400">
-              Welcome, {session.user?.name}
-            </span>
-            <Link
-              href="/profile/edit"
-              className="text-sm font-medium hover:underline underline-offset-4"
-            >
-              Profile
-            </Link>
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-sm font-medium bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"
-            >
-              Log Out
-            </button>
-          </>
-        )}
-      </nav>
+<nav className="ml-auto flex items-center gap-4 sm:gap-6">
+  {session && (
+    <>
+      <Link href="/profile/edit" className="text-sm font-medium hover:underline underline-offset-4">
+        Profile
+      </Link>
+      <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm font-medium hover:underline underline-offset-4">
+        Log Out
+      </button>
+      {/* Add Avatar */}
+      <Link href="/profile/edit">
+        <Image height={10} width={10} src={session.user?.image || '/default-avatar.png'} alt="User avatar" className="h-8 w-8 rounded-full object-cover" />
+      </Link>
+    </>
+  )}
+</nav>
     </header>
   );
 }

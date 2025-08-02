@@ -37,6 +37,7 @@ export const authOptions: NextAuthOptions = {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          image: user.image,
         };
       }
     }),
@@ -48,21 +49,24 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/login',
   },
-  // --- ADD THIS CALLBACKS OBJECT ---
   callbacks: {
-    // This callback is called whenever a JWT is created or updated.
-    jwt: async ({ token, user }) => {
-      // `user` is only available on initial sign-in
+    jwt: async ({ token, user, trigger, session }) => {
       if (user) {
         token.id = user.id;
+        token.name = user.name;
+        token.picture = user.image;
+      }
+      if(trigger === "update" && session?.user){
+        token.name = session.user.name;
+        token.picture = session.user.image;
       }
       return token;
     },
-    // This callback is called whenever a session is checked.
     session: async ({ session, token }) => {
-      // We are passing the user id from the token to the session
       if (token && session.user) {
         session.user.id = token.id as string;
+        session.user.name = token.name;
+        session.user.image = token.picture;
       }
       return session;
     },

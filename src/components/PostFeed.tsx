@@ -1,5 +1,3 @@
-// src/components/PostFeed.tsx
-
 import clientPromise from "@/lib/mongodb";
 import Post, { PostProps } from "./Post";
 import { getServerSession } from "next-auth";
@@ -15,24 +13,36 @@ async function getPosts(userId?: string) {
       { $sort: { createdAt: -1 } },
       {
         $lookup: {
+          from: "users",
+          localField: "authorId",
+          foreignField: "_id",
+          as: "authorDetails",
+        },
+      },
+      { $unwind: "$authorDetails" }, 
+      {
+        $lookup: {
           from: "likes",
           localField: "_id",
           foreignField: "postId",
           as: "likesData",
         },
       },
+
       {
         $addFields: {
           likesCount: { $size: "$likesData" },
           commentsCount: { $ifNull: ["$commentsCount", 0] },
-          isLiked: userId
-            ? { $in: [new ObjectId(userId), "$likesData.userId"] }
-            : false,
+          isLiked: userId ? { $in: [new ObjectId(userId), "$likesData.userId"] } : false,
+          authorName: "$authorDetails.name",
+          authorImage: "$authorDetails.image",
         },
       },
+
       {
         $project: {
           likesData: 0,
+          authorDetails: 0,
         },
       },
     ];

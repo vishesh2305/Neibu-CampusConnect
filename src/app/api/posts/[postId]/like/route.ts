@@ -48,10 +48,9 @@ export async function POST(
       );
       return NextResponse.json({ message: "Post liked" }, { status: 200 });
     }
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+} catch (error) {
+  console.error(error);
+  return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
+}
+
 }
