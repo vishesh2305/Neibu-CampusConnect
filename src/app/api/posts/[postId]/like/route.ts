@@ -31,10 +31,14 @@ export async function POST(
 
     if (existingLike) {
       await db.collection("likes").deleteOne({ _id: existingLike._id });
-      await db.collection("posts").updateOne(
-        { _id: postObjectId },
-        { $inc: { likesCount: -1 } }
-      );
+      await db.collection("posts").updateOne({ _id: postObjectId },{ $inc: { likesCount: -1 } });
+
+      await db.collection("notifications").deleteOne({
+        type: 'like',
+        postId: postObjectId,
+        actorId: userId
+      });
+
       return NextResponse.json({ message: "Post unliked" }, { status: 200 });
     } else {
       await db.collection("likes").insertOne({
@@ -42,10 +46,22 @@ export async function POST(
         userId: userId,
         createdAt: new Date(),
       });
-      await db.collection("posts").updateOne(
-        { _id: postObjectId },
-        { $inc: { likesCount: 1 } }
-      );
+
+      await db.collection("posts").updateOne({ _id: postObjectId },{ $inc: { likesCount: 1 } });
+
+      const post = await db.collection("posts").findOne({ _id: postObjectId });
+
+      if (post && post.authorId.toString() !== session.user.id) {
+        await db.collection("notifications").insertOne({
+          userId: post.authorId, 
+          actorId: userId, 
+          type: 'like',
+          postId: postObjectId,
+          read: false,
+          createdAt: new Date(),
+        });
+      }
+
       return NextResponse.json({ message: "Post liked" }, { status: 200 });
     }
 } catch (error) {

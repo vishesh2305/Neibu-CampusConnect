@@ -47,6 +47,7 @@ async function getPosts(userId?: string, groupId?: string) {
             : false,
           authorName: "$authorDetails.name",
           authorImage: "$authorDetails.image",
+          imageUrl: { $ifNull: ["$imageUrl", null] }, // <-- added line
         },
       },
       {

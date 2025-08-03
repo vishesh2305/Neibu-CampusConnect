@@ -53,9 +53,10 @@ export async function POST(
 
     const client = await clientPromise;
     const db = client.db();
+    const postObjectId = new ObjectId(postId);
 
     const newComment = {
-      postId: new ObjectId(postId),
+      postId: postObjectId,
       authorId: new ObjectId(session.user.id),
       authorName: session.user.name,
       text: text.trim(),
@@ -68,6 +69,23 @@ export async function POST(
       { _id: new ObjectId(postId) },
       { $inc: { commentsCount: 1 } }
     );
+
+
+
+    // Notifications
+    const post = await db.collection("posts").findOne({ _id: postObjectId });
+    if (post && post.authorId.toString() !== session.user.id) {
+        await db.collection("notifications").insertOne({
+            userId: post.authorId,
+            actorId: new ObjectId(session.user.id),
+            type: 'comment',
+            postId: postObjectId,
+            read: false,
+            createdAt: new Date(),
+        });
+    }
+
+
 
     return NextResponse.json({ message: "Comment added" }, { status: 201 });
   } catch (error) {

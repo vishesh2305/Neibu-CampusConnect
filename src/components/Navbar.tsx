@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
+import Notifications from "./Notifications";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -34,6 +35,7 @@ export default function Navbar() {
 <nav className="ml-auto flex items-center gap-4 sm:gap-6">
   {session && (
     <>
+    <Notifications />
       <Link href="/profile/edit" className="text-sm font-medium hover:underline underline-offset-4">
         Profile
       </Link>

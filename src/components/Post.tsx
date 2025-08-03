@@ -13,11 +13,12 @@ export interface PostProps {
   content: string;
   authorId: string;
   authorName: string;
-  authorImage?: string | null; 
+  authorImage?: string | null;
   createdAt: string;
   likesCount: number;
   commentsCount: number;
   isLiked: boolean;
+  imageUrl?: string; // NEW: optional imageUrl
 }
 
 export default function Post({ post }: { post: PostProps }) {
@@ -47,6 +48,18 @@ export default function Post({ post }: { post: PostProps }) {
       </div>
 
       <p className="text-gray-300 whitespace-pre-wrap mb-4">{post.content}</p>
+
+      {post.imageUrl && (
+        <div className="mb-4">
+          <Image
+            src={post.imageUrl}
+            alt="Post image"
+            width={600}
+            height={400}
+            className="rounded-lg object-cover max-h-[400px] w-full"
+          />
+        </div>
+      )}
 
       <div className="border-t border-gray-700 pt-2 flex items-center gap-4">
         <LikeButton
