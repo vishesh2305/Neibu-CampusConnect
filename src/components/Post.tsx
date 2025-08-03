@@ -18,11 +18,17 @@ export interface PostProps {
   likesCount: number;
   commentsCount: number;
   isLiked: boolean;
-  imageUrl?: string; // NEW: optional imageUrl
+  imageUrl?: string;
 }
 
-export default function Post({ post }: { post: PostProps }) {
-  const [showComments, setShowComments] = useState(false);
+export default function Post({
+  post,
+  defaultShowComments = false,
+}: {
+  post: PostProps;
+  defaultShowComments?: boolean;
+}) {
+  const [showComments, setShowComments] = useState(defaultShowComments);
 
   return (
     <div className="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700">
