@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import clientPromise from "../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 
-
-export async function GET(req: Request, { params }: { params: { userId: string } }) {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ userId: string }> }
+) {
   try {
     const { userId } = await params;
+
     if (!ObjectId.isValid(userId)) {
       return NextResponse.json({ message: "Invalid User ID" }, { status: 400 });
     }
@@ -16,6 +19,7 @@ export async function GET(req: Request, { params }: { params: { userId: string }
       { _id: new ObjectId(userId) },
       { projection: { password: 0 } }
     );
+
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }

@@ -1,4 +1,4 @@
-import clientPromise from "@/lib/mongodb";
+import clientPromise from "../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -12,12 +12,6 @@ interface UserProfile {
   year?: number;
   createdAt: string;
 }
-
-type ProfilePageProps = {
-  params: {
-    userId: string;
-  };
-};
 
 async function getUserProfile(userId: string): Promise<UserProfile | null> {
   if (!ObjectId.isValid(userId)) return null;
@@ -39,7 +33,7 @@ async function getUserProfile(userId: string): Promise<UserProfile | null> {
   }
 }
 
-export default async function ProfilePage({ params }: ProfilePageProps) {
+export default async function ProfilePage({ params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params;
   const user = await getUserProfile(userId);
 
@@ -51,9 +45,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         <div className="flex items-center space-x-4">
           {/* Use the user's image */}
           <Image
-            src={user.image || '/default-avatar.png'}
+            src={user.image || "/default-avatar.png"}
             alt="Avatar"
-            height={10}
+            height={80}
             width={80}
             className="w-24 h-24 rounded-full bg-gray-600 object-cover"
           />

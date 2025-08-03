@@ -6,13 +6,15 @@ import {
   HomeIcon,
   UserIcon,
   UsersIcon,
-  CalendarDaysIcon, 
+  CalendarDaysIcon,
+  ChatBubbleLeftRightIcon, 
 } from '@heroicons/react/24/outline';
 
 const navLinks = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Groups', href: '/groups', icon: UsersIcon },
-  { name: 'Events', href: '/events', icon: CalendarDaysIcon }, // ✅ New nav item
+  { name: 'Events', href: '/events', icon: CalendarDaysIcon },
+  { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon }, 
   { name: 'Profile', href: '/profile/edit', icon: UserIcon },
 ];
 

@@ -1,16 +1,20 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/authOptions';
-import clientPromise from '@/lib/mongodb';
+import { authOptions } from '../../../../../lib/authOptions';
+import clientPromise from '../../../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
-export async function POST(req: Request, { params }: { params: { groupId: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ groupId: string }> }
+) {
+  const { groupId } = await params;  // Await here
+
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const { groupId } = await params;
   if (!ObjectId.isValid(groupId)) {
     return NextResponse.json({ message: 'Invalid Group ID' }, { status: 400 });
   }

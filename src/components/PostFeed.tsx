@@ -1,7 +1,7 @@
-import clientPromise from "@/lib/mongodb";
+import clientPromise from "../lib/mongodb";
 import Post, { PostProps } from "./Post";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { authOptions } from "../lib/authOptions";
 import { ObjectId, Document } from "mongodb";
 
 async function getPosts(userId?: string, groupId?: string) {

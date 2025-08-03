@@ -1,5 +1,5 @@
-import CreateEventForm from "@/components/CreateEventForm";
-import EventList from "@/components/EventList";
+import CreateEventForm from "../../../components/CreateEventForm";
+import EventList from "../../../components/EventList";
 
 export default function EventsPage() {
   return (

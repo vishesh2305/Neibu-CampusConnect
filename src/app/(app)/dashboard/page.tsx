@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/authOptions";
-import CreatePost from "@/components/CreatePost";
-import PostFeed from "@/components/PostFeed";
+import { authOptions } from "../../../lib/authOptions";
+import CreatePost from "../../../components/CreatePost";
+import PostFeed from "../../../components/PostFeed";
 export default async function Dashboard() {
   await getServerSession(authOptions);
 

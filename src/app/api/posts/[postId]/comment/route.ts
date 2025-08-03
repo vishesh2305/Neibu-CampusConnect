@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/authOptions";
-import clientPromise from "@/lib/mongodb";
+import { authOptions } from "../../../../../lib/authOptions";
+import clientPromise from "../../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 
 export async function GET(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   const { postId } = await params;
+
   if (!ObjectId.isValid(postId)) {
     return NextResponse.json({ message: "Invalid Post ID" }, { status: 400 });
   }
@@ -16,24 +17,22 @@ export async function GET(
   try {
     const client = await clientPromise;
     const db = client.db();
-    const comments = await db.collection('comments')
+    const comments = await db
+      .collection("comments")
       .find({ postId: new ObjectId(postId) })
       .sort({ createdAt: 1 }) // Oldest first
       .toArray();
-    
+
     return NextResponse.json(comments, { status: 200 });
   } catch (error) {
     console.error("GET_COMMENTS_ERROR", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
-// --- END NEW GET HANDLER ---
 
-
-// EXISTING POST HANDLER...
 export async function POST(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
@@ -41,13 +40,15 @@ export async function POST(
   }
 
   const { postId } = await params;
+
   if (!ObjectId.isValid(postId)) {
     return NextResponse.json({ message: "Invalid Post ID" }, { status: 400 });
   }
 
   try {
     const { text } = await req.json();
-    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+
+    if (!text || typeof text !== "string" || text.trim().length === 0) {
       return NextResponse.json({ message: "Comment text is required." }, { status: 400 });
     }
 
@@ -64,35 +65,28 @@ export async function POST(
     };
 
     await db.collection("comments").insertOne(newComment);
-    
+
     await db.collection("posts").updateOne(
-      { _id: new ObjectId(postId) },
+      { _id: postObjectId },
       { $inc: { commentsCount: 1 } }
     );
-
-
 
     // Notifications
     const post = await db.collection("posts").findOne({ _id: postObjectId });
     if (post && post.authorId.toString() !== session.user.id) {
-        await db.collection("notifications").insertOne({
-            userId: post.authorId,
-            actorId: new ObjectId(session.user.id),
-            type: 'comment',
-            postId: postObjectId,
-            read: false,
-            createdAt: new Date(),
-        });
+      await db.collection("notifications").insertOne({
+        userId: post.authorId,
+        actorId: new ObjectId(session.user.id),
+        type: "comment",
+        postId: postObjectId,
+        read: false,
+        createdAt: new Date(),
+      });
     }
-
-
 
     return NextResponse.json({ message: "Comment added" }, { status: 201 });
   } catch (error) {
     console.error("COMMENT_POST_ERROR", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }

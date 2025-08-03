@@ -1,14 +1,14 @@
 // src/app/(app)/groups/[groupId]/page.tsx
 
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/authOptions';
-import clientPromise from '@/lib/mongodb';
+import { authOptions } from '../../../../lib/authOptions';
+import clientPromise from '../../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { notFound } from 'next/navigation';
-
-import JoinLeaveGroupButton from '@/components/JoinLeaveGroupButton';
-import CreatePost from '@/components/CreatePost';
-import PostFeed from '@/components/PostFeed';
+import JoinLeaveGroupButton from '../../../../components/JoinLeaveGroupButton';
+import CreatePost from '../../../../components/CreatePost';
+import PostFeed from '../../../../components/PostFeed';
+import { Metadata } from 'next';
 
 interface GroupDetails {
   _id: string;
@@ -20,17 +20,13 @@ interface GroupDetails {
 
 async function getGroupDetails(groupId: string, userId: string | null): Promise<GroupDetails | null> {
   if (!ObjectId.isValid(groupId)) return null;
-
   try {
     const client = await clientPromise;
     const db = client.db();
     const groupObjectId = new ObjectId(groupId);
-
     const group = await db.collection('groups').findOne({ _id: groupObjectId });
     if (!group) return null;
-
     const memberCount = await db.collection('group_members').countDocuments({ groupId: groupObjectId });
-
     let isMember = false;
     if (userId) {
       const membership = await db.collection('group_members').findOne({
@@ -39,7 +35,6 @@ async function getGroupDetails(groupId: string, userId: string | null): Promise<
       });
       isMember = !!membership;
     }
-
     return {
       ...JSON.parse(JSON.stringify(group)),
       memberCount,
@@ -51,14 +46,28 @@ async function getGroupDetails(groupId: string, userId: string | null): Promise<
   }
 }
 
-export const dynamic = 'force-dynamic';
-
+// Correctly type the props for generateMetadata
 type Props = {
-  params: Promise<{ groupId: string }>; // Update to reflect params as a Promise
+  params: Promise<{groupId: string}>;
 };
 
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { groupId } = await params; // No await
+  const session = await getServerSession(authOptions);
+  const group = await getGroupDetails(groupId, session?.user?.id || null);
+
+  if (!group) {
+    return { title: 'Group Not Found' };
+  }
+
+  return {
+    title: group.name,
+    description: group.description,
+  };
+}
+
 export default async function GroupPage({ params }: Props) {
-  const { groupId } = await params; // Await params to resolve groupId
+  const { groupId } = await params; // No await
   const session = await getServerSession(authOptions);
   const group = await getGroupDetails(groupId, session?.user?.id || null);
 
@@ -85,4 +94,4 @@ export default async function GroupPage({ params }: Props) {
       </div>
     </div>
   );
-}
+};

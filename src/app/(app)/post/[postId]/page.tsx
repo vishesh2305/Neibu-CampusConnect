@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/authOptions";
-import clientPromise from "@/lib/mongodb";
+import { authOptions } from "../../../../lib/authOptions";
+import clientPromise from "../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 import { notFound } from "next/navigation";
-import Post, { PostProps } from "@/components/Post";
+import Post, { PostProps } from "../../../../components/Post";
 import { Document } from "mongodb";
 
 async function getPostData(postId: string, userId?: string): Promise<PostProps | null> {
@@ -19,17 +19,16 @@ async function getPostData(postId: string, userId?: string): Promise<PostProps |
     const aggregationPipeline: Document[] = [
       { $match: { _id: postObjectId } },
       { $limit: 1 },
-      // The rest of the pipeline is identical to the one in PostFeed
-      { $lookup: { from: 'users', localField: 'authorId', foreignField: '_id', as: 'authorDetails' }},
-      { $unwind: '$authorDetails' },
-      { $lookup: { from: "likes", localField: "_id", foreignField: "postId", as: "likesData"}},
+      { $lookup: { from: "users", localField: "authorId", foreignField: "_id", as: "authorDetails" }},
+      { $unwind: "$authorDetails" },
+      { $lookup: { from: "likes", localField: "_id", foreignField: "postId", as: "likesData" }},
       {
         $addFields: {
           likesCount: { $size: "$likesData" },
           commentsCount: { $ifNull: ["$commentsCount", 0] },
           isLiked: userId ? { $in: [new ObjectId(userId), "$likesData.userId"] } : false,
-          authorName: '$authorDetails.name',
-          authorImage: '$authorDetails.image',
+          authorName: "$authorDetails.name",
+          authorImage: "$authorDetails.image",
           imageUrl: { $ifNull: ["$imageUrl", null] },
         },
       },
@@ -41,7 +40,7 @@ async function getPostData(postId: string, userId?: string): Promise<PostProps |
     if (results.length === 0) {
       return null;
     }
-    
+
     return JSON.parse(JSON.stringify(results[0]));
   } catch (error) {
     console.error("Error fetching single post:", error);
@@ -49,10 +48,10 @@ async function getPostData(postId: string, userId?: string): Promise<PostProps |
   }
 }
 
-
-export default async function SinglePostPage({ params }: { params: { postId: string } }) {
+export default async function SinglePostPage({ params }: { params: Promise<{ postId: string }> }) {
+  const { postId } = await params; 
   const session = await getServerSession(authOptions);
-  const post = await getPostData(params.postId, session?.user?.id);
+  const post = await getPostData(postId, session?.user?.id);
 
   if (!post) {
     notFound();

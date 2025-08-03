@@ -1,5 +1,5 @@
-import CreateGroupForm from "@/components/CreateGroupForm";
-import GroupList from "@/components/GroupList";
+import CreateGroupForm from "../../../components/CreateGroupForm";
+import GroupList from "../../../components/GroupList";
 
 export default function GroupsPage() {
   return (

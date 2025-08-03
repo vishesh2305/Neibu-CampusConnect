@@ -2,7 +2,7 @@
 
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import clientPromise from '@/lib/mongodb';
+import clientPromise from '../lib/mongodb';
 import bcrypt from 'bcryptjs';
 import { User } from 'next-auth';
 
