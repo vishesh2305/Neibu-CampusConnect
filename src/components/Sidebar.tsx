@@ -2,19 +2,21 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   HomeIcon,
   UserIcon,
   UsersIcon,
   CalendarDaysIcon,
-  ChatBubbleLeftRightIcon, 
+  ChatBubbleLeftRightIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 
 const navLinks = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Groups', href: '/groups', icon: UsersIcon },
   { name: 'Events', href: '/events', icon: CalendarDaysIcon },
-  { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon }, 
+  { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
   { name: 'Profile', href: '/profile/edit', icon: UserIcon },
 ];
 
@@ -24,6 +26,8 @@ function classNames(...classes: string[]) {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'admin';
 
   return (
     <div className="flex flex-col h-full bg-gray-950 p-4 border-r border-gray-800">
@@ -46,6 +50,24 @@ export default function Sidebar() {
             {item.name}
           </Link>
         ))}
+
+        {isAdmin && (
+          <>
+            <hr className="my-4 border-gray-700" />
+            <Link
+              href="/admin"
+              className={classNames(
+                pathname.startsWith('/admin')
+                  ? 'bg-red-600 text-white'
+                  : 'text-gray-400 hover:bg-gray-800 hover:text-white',
+                'group flex items-center px-3 py-2 text-sm font-medium rounded-md'
+              )}
+            >
+              <ShieldCheckIcon className="mr-3 h-6 w-6" aria-hidden="true" />
+              Admin
+            </Link>
+          </>
+        )}
       </nav>
     </div>
   );
