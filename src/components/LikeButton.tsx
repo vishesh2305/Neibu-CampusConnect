@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { HeartIcon } from '@heroicons/react/24/solid';
 import { HeartIcon as HeartIconOutline } from '@heroicons/react/24/outline';
+import { useSession } from "next-auth/react";
 
 interface LikeButtonProps {
   postId: string;
@@ -16,8 +17,14 @@ export default function LikeButton({ postId, initialLikes, isLiked }: LikeButton
   const [likes, setLikes] = useState(initialLikes);
   const [liked, setLiked] = useState(isLiked);
   const [loading, setLoading] = useState(false);
+  const { data: session } = useSession();
+
 
   const handleLike = async () => {
+      if (!session) {
+      alert("Please login to like posts.");
+      return;
+    }
     if (loading) return;
     setLoading(true);
 

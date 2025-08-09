@@ -16,30 +16,30 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-      const testimonials = [
+    const testimonials = [
     {
       quote: "This platform is amazing! It's so easy to use and has helped me a lot.",
       name: "Vishesh",
       designation: "Developer",
-      src: "https://wallpapers.com/images/featured/anime-boy-dark-oltg2lztxcu00bec.jpg",
+      src: "/images/anime-boy-dark.png",
     },
     {
       quote: "I love the user interface. It's clean, modern, and intuitive.",
       name: "Vishesh",
       designation: "Designer",
-      src: "https://img.freepik.com/premium-vector/vector-young-man-animestyle-character-vector-illustration-design-manga-anime-boy_147933-12515.jpg?semt=ais_hybrid&w=740",
+      src: "/images/young_man_anime.png",
     },
     {
       quote: "I love the user interface. It's clean, modern, and intuitive.",
       name: "Vishesh",
       designation: "Engineer",
-      src: "https://media.craiyon.com/2025-04-12/pyJGEfq0T--2bGrq-WHFFQ.webp",
+      src: "/images/head_covered_man.png",
     },
     {
       quote: "I love the user interface. It's clean, modern, and intuitive.",
       name: "Vishesh",
       designation: "Bug Hunter",
-      src: "https://images.steamusercontent.com/ugc/965355694153811922/DF6B86B28B17363E7529D2980F1580D221B2B96D/?imw=512&&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false",
+      src: "/images/anime_girl.png",
     },
   ];
 
