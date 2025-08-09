@@ -12,7 +12,10 @@
     "strict": true,
     "noEmit": true,
     "types": ["node","next"],
-
+        "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "allowJs": true,
     "incremental": true,
     "plugins": [
