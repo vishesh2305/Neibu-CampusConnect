@@ -30,7 +30,7 @@ export const PinContainer = ({
   return (
     <a
       className={cn(
-        "relative group/pin z-50 cursor-pointer",
+        "relative group/pin  cursor-pointer ",
         containerClassName
       )}
       onMouseEnter={onMouseEnter}
@@ -64,7 +64,7 @@ export const PinPerspective = ({
   title?: string;
 }) => {
   return (
-    <motion.div className="pointer-events-none w-96 h-80 flex items-center justify-center opacity-0 group-hover/pin:opacity-100 z-[60] transition duration-500">
+    <motion.div className=" pointer-events-none w-96 h-80 flex items-center justify-center opacity-0 group-hover/pin:opacity-100 z-[60] transition duration-500">
       <div className="w-full h-full -mt-7 flex-none inset-0">
         <div className="absolute top-0 inset-x-0 flex justify-center">
           {/* Removed inner <a>, now it's just a styled div */}

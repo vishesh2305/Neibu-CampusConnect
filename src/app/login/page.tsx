@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
+import { Label } from "../../components/ui/label";
+import { Input } from "../../components/ui/input";
+import { cn } from "@/lib/utils";
+import { AnimatedTestimonials } from '@/components/ui/animated-testimonials';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -11,6 +15,33 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+      const testimonials = [
+    {
+      quote: "This platform is amazing! It's so easy to use and has helped me a lot.",
+      name: "Vishesh",
+      designation: "Developer",
+      src: "https://wallpapers.com/images/featured/anime-boy-dark-oltg2lztxcu00bec.jpg",
+    },
+    {
+      quote: "I love the user interface. It's clean, modern, and intuitive.",
+      name: "Vishesh",
+      designation: "Designer",
+      src: "https://img.freepik.com/premium-vector/vector-young-man-animestyle-character-vector-illustration-design-manga-anime-boy_147933-12515.jpg?semt=ais_hybrid&w=740",
+    },
+    {
+      quote: "I love the user interface. It's clean, modern, and intuitive.",
+      name: "Vishesh",
+      designation: "Engineer",
+      src: "https://media.craiyon.com/2025-04-12/pyJGEfq0T--2bGrq-WHFFQ.webp",
+    },
+    {
+      quote: "I love the user interface. It's clean, modern, and intuitive.",
+      name: "Vishesh",
+      designation: "Bug Hunter",
+      src: "https://images.steamusercontent.com/ugc/965355694153811922/DF6B86B28B17363E7529D2980F1580D221B2B96D/?imw=512&&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false",
+    },
+  ];
 
  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,13 +54,14 @@ export default function LoginPage() {
         email,
         password,
       });
-if (res?.error) {
+
+      if (res?.error) {
         setError('Invalid email or password.');
       } else if (res?.ok) {
         router.push('/dashboard');
         router.refresh();
       }
-} catch (error) {
+    } catch (error) {
       setError('An error occurred. Please try again.');
       console.error('Login failed:', error);
     } finally {
@@ -38,58 +70,38 @@ if (res?.error) {
   };
 
 return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center text-white">
-          Log In to CampusConnect
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className="text-sm font-medium text-gray-300 block mb-2"
-            >
-              University Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="text-sm font-medium text-gray-300 block mb-2"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          {error && (
-            <p className="text-sm text-red-500 bg-red-900/20 p-3 rounded-md">
-              {error}
-            </p>
-          )}
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Logging In...' : 'Log In'}
-            </button>
-          </div>
+    <div className=" flex items-center justify-evenly min-h-screen ">
+      <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
+        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
+          Welcome back to CampusConnect
+        </h2>
+        <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
+          Log in to continue to your dashboard.
+        </p>
+
+        <form className="my-8" onSubmit={handleSubmit}>
+            {error && (
+                <p className="text-sm text-red-500 bg-red-900/20 p-3 rounded-md mb-4">
+                {error}
+                </p>
+            )}
+          <LabelInputContainer className="mb-4">
+            <Label htmlFor="email">University Email</Label>
+            <Input id="email" placeholder="johndoe@university.edu" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </LabelInputContainer>
+          <LabelInputContainer className="mb-4">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" placeholder="••••••••" type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
+          </LabelInputContainer>
+          
+          <button
+            className="group/btn relative block h-10 w-full rounded-md bg-gradient-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset] disabled:opacity-50"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? 'Logging In...' : 'Log In →'}
+            <BottomGradient />
+          </button>
         </form>
         <p className="text-sm text-center text-gray-400">
           Don&apos;t have an account?{' '}
@@ -98,6 +110,34 @@ return (
           </Link>
         </p>
       </div>
+
+      <div className="hidden md:flex flex-col items-center justify-center w-1/2 p-10 text-white">
+        <AnimatedTestimonials testimonials={testimonials} />
+      </div>
+
     </div>
   );
 }
+
+const BottomGradient = () => {
+  return (
+    <>
+      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
+      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
+    </>
+  );
+};
+
+const LabelInputContainer = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return (
+    <div className={cn("flex w-full flex-col space-y-2", className)}>
+      {children}
+    </div>
+  );
+};

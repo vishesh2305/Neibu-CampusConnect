@@ -233,7 +233,7 @@ export default function Page() {
       </TracingBeam>
 
       {/* 3D Pin Section */}
-      <div className="h-[40rem] w-full flex items-center justify-center ">
+      <div className=" h-[40rem] z-0 w-full flex items-center justify-center ">
         <PinContainer
             title="CampusConnect"
             href="/signup"
