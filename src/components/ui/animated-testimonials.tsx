@@ -2,8 +2,8 @@
 
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion"; // use framer-motion instead of "motion/react"
-import { useEffect, useState, useMemo } from "react";
-
+import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 type Testimonial = {
   quote: string;
   name: string;
@@ -20,9 +20,9 @@ export const AnimatedTestimonials = ({
 }) => {
   const [active, setActive] = useState(0);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setActive((prev) => (prev + 1) % testimonials.length);
-  };
+  }, [testimonials.length]);
 
   const handlePrev = () => {
     setActive((prev) => (prev - 1 + testimonials.length) % testimonials.length);
@@ -35,16 +35,16 @@ export const AnimatedTestimonials = ({
       const interval = setInterval(handleNext, 5000);
       return () => clearInterval(interval);
     }
-  }, [autoplay]);
+  }, [autoplay, handleNext]);
 
-const [rotateMap, setRotateMap] = useState<number[] | null>(null);
+  const [rotateMap, setRotateMap] = useState<number[] | null>(null);
 
-useEffect(() => {
-  const map = testimonials.map(() => Math.floor(Math.random() * 21) - 10);
-  setRotateMap(map);
-}, [testimonials]);
+  useEffect(() => {
+    const map = testimonials.map(() => Math.floor(Math.random() * 21) - 10);
+    setRotateMap(map);
+  }, [testimonials]);
 
-if (!rotateMap) return null;
+  if (!rotateMap) return null;
 
 
   return (
@@ -84,7 +84,7 @@ if (!rotateMap) return null;
                   }}
                   className="absolute inset-0 origin-bottom text-white"
                 >
-                  <img
+                  <Image
                     src={testimonial.src}
                     alt={testimonial.name}
                     width={500}
