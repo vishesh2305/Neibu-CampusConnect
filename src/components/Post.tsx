@@ -1,9 +1,13 @@
+// src/components/Post.tsx
+
 "use client";
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // Import useRouter
+import { useSession } from 'next-auth/react'; // Import useSession
 import { formatDistanceToNow } from 'date-fns';
-import { ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleOvalLeftEllipsisIcon, TrashIcon } from '@heroicons/react/24/outline';
 import LikeButton from './LikeButton';
 import CommentSection from './CommentSection';
 import Image from 'next/image';
@@ -29,28 +33,72 @@ export default function Post({
   defaultShowComments?: boolean;
 }) {
   const [showComments, setShowComments] = useState(defaultShowComments);
+  const { data: session } = useSession(); // Get the current user's session
+  const router = useRouter(); // Get the router instance
+
+  // Determine if the current user can delete the post
+  const isAuthor = session?.user?.id === post.authorId;
+  const isAdmin = session?.user?.role === 'admin';
+  const canDelete = isAuthor || isAdmin;
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/posts/${post._id}/delete`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        // Refresh the page to update the feed
+        router.refresh();
+      } else {
+        const data = await res.json();
+        alert(`Failed to delete post: ${data.message}`);
+      }
+    } catch (error) {
+      console.error("Failed to delete post", error);
+      alert('An error occurred while deleting the post.');
+    }
+  };
 
   return (
-    <div className="p-4  rounded-lg shadow-md ">
-      <div className="flex items-center mb-3">
-        <Image
-          src={post.authorImage || '/default-avatar.png'}
-          width={80}
-          height={80}
-          alt={`${post.authorName}'s avatar`}
-          className="w-10 h-10 rounded-full bg-gray-600 mr-3 object-cover"
-        />
-        <div>
-          <Link
-            href={`/profile/${post.authorId}`}
-            className="font-semibold text-white hover:underline"
-          >
-            {post.authorName}
-          </Link>
-          <p className="text-xs text-gray-400">
-            {formatDistanceToNow(new Date(post.createdAt))} ago
-          </p>
+    <div className="p-4 rounded-lg shadow-md border border-gray-700">
+      <div className="flex justify-between items-start">
+        <div className="flex items-center mb-3">
+          <Image
+            src={post.authorImage || '/default-avatar.png'}
+            width={40}
+            height={40}
+            alt={`${post.authorName}'s avatar`}
+            className="w-10 h-10 rounded-full bg-gray-600 mr-3 object-cover"
+          />
+          <div>
+            <Link
+              href={`/profile/${post.authorId}`}
+              className="font-semibold text-white hover:underline"
+            >
+              {post.authorName}
+            </Link>
+            <p className="text-xs text-gray-400">
+              {formatDistanceToNow(new Date(post.createdAt))} ago
+            </p>
+          </div>
         </div>
+
+        {/* --- NEW: Conditionally render Delete Button --- */}
+        {canDelete && (
+          <button
+            onClick={handleDelete}
+            className="p-1 text-gray-500 hover:text-red-500 rounded-full transition-colors"
+            title="Delete post"
+          >
+            <TrashIcon className="h-5 w-5" />
+          </button>
+        )}
+        {/* --- END NEW SECTION --- */}
       </div>
 
       <p className="text-gray-300 whitespace-pre-wrap mb-4">{post.content}</p>

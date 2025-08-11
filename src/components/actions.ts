@@ -1,24 +1,44 @@
 // src/components/actions.ts
 
-"use server"; // This directive marks all functions in this file as Server Actions
+"use server";
 
 import clientPromise from "../lib/mongodb";
 import { ObjectId, Document } from "mongodb";
 import { PostProps } from "./Post";
 
-export async function getPosts(userId?: string, groupId?: string, page = 1, limit = 10): Promise<PostProps[]> {
+export async function getPosts(
+  userId?: string,
+  groupId?: string,
+  page = 1,
+  limit = 10
+): Promise<PostProps[]> {
+  if (!userId) return [];
+
   try {
     const client = await clientPromise;
     const db = client.db();
+    const currentUserObjectId = new ObjectId(userId);
 
-    const matchStage: Document = {};
+    const skip = (page - 1) * limit;
+
+    let matchStage: Document = {};
+
     if (groupId) {
       matchStage.groupId = new ObjectId(groupId);
     } else {
-      matchStage.groupId = { $exists: false };
-    }
+      const followingCursor = db.collection('followers').find({ followerId: currentUserObjectId });
+      const followingIds = await followingCursor.map(doc => doc.followingId).toArray();
 
-    const skip = (page - 1) * limit;
+      const groupsCursor = db.collection('group_members').find({ userId: currentUserObjectId });
+      const groupIds = await groupsCursor.map(doc => doc.groupId).toArray();
+
+      matchStage = {
+        $or: [
+          { authorId: { $in: followingIds }, groupId: { $exists: false } },
+          { groupId: { $in: groupIds } },
+        ],
+      };
+    }
 
     const aggregationPipeline = [
       { $match: matchStage },
@@ -32,7 +52,7 @@ export async function getPosts(userId?: string, groupId?: string, page = 1, limi
         $addFields: {
           likesCount: { $size: "$likesData" },
           commentsCount: { $ifNull: ["$commentsCount", 0] },
-          isLiked: userId ? { $in: [new ObjectId(userId), "$likesData.userId"] } : false,
+          isLiked: { $in: [currentUserObjectId, "$likesData.userId"] },
           authorName: '$authorDetails.name',
           authorImage: '$authorDetails.image',
           imageUrl: { $ifNull: ["$imageUrl", null] },
@@ -43,7 +63,6 @@ export async function getPosts(userId?: string, groupId?: string, page = 1, limi
 
     const posts = await db.collection("posts").aggregate(aggregationPipeline).toArray();
     
-    // Ensure all ObjectIds are converted to strings before returning to the client
     return JSON.parse(JSON.stringify(posts));
 
   } catch (error) {

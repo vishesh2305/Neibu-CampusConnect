@@ -7,7 +7,7 @@ import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import FollowButton from "@/components/FollowButton";
-
+import MessageButton from "@/components/MessageButton";
 interface UserProfile {
   _id: string;
   name: string;
@@ -88,6 +88,7 @@ export default async function ProfilePage({ params }: Props) {
               </div>
             </div>
           </div>
+          <MessageButton targetUserId={user._id} />
           <FollowButton targetUserId={user._id} isFollowing={user.isFollowing} />
         </div>
 
