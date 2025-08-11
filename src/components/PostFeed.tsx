@@ -1,93 +1,64 @@
-"use server"
+// src/components/PostFeed.tsx
 
-import clientPromise from "../lib/mongodb";
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import Post, { PostProps } from "./Post";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../lib/authOptions";
-import { ObjectId, Document } from "mongodb";
+import { getPosts } from "./actions"; // server action
 
-async function getPosts(userId?: string, groupId?: string) {
-  try {
-    const client = await clientPromise;
-    const db = client.db();
+export default function PostFeed({
+  initialPosts,
+  groupId,
+}: {
+  initialPosts: PostProps[];
+  groupId?: string;
+}) {
+  const [posts, setPosts] = useState<PostProps[]>(initialPosts);
+  const [page, setPage] = useState(2); // Start with page 2 since page 1 is initial data
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const { data: session } = useSession();
 
-    const matchStage: Document = {};
-    if (groupId) {
-      matchStage.groupId = new ObjectId(groupId);
+  const [loaderRef, isIntersecting] = useIntersectionObserver({
+    threshold: 0.5,
+  });
+
+  // ✅ useCallback fixes missing dependency warning
+  const loadMorePosts = useCallback(async () => {
+    if (isLoading || !hasMore) return;
+    setIsLoading(true);
+
+    const newPosts = await getPosts(session?.user?.id, groupId, page);
+
+    if (newPosts.length > 0) {
+      setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+      setPage((prevPage) => prevPage + 1);
     } else {
-      matchStage.groupId = { $exists: false };
+      setHasMore(false);
     }
+    setIsLoading(false);
+  }, [isLoading, hasMore, session?.user?.id, groupId, page]);
 
-    const aggregationPipeline = [
-      { $match: matchStage },
-      { $sort: { createdAt: -1 } },
-      {
-        $lookup: {
-          from: "users",
-          localField: "authorId",
-          foreignField: "_id",
-          as: "authorDetails",
-        },
-      },
-      { $unwind: "$authorDetails" },
-      {
-        $lookup: {
-          from: "likes",
-          localField: "_id",
-          foreignField: "postId",
-          as: "likesData",
-        },
-      },
-      {
-        $addFields: {
-          likesCount: { $size: "$likesData" },
-          commentsCount: { $ifNull: ["$commentsCount", 0] },
-          isLiked: userId
-            ? { $in: [new ObjectId(userId), "$likesData.userId"] }
-            : false,
-          authorName: "$authorDetails.name",
-          authorImage: "$authorDetails.image",
-          imageUrl: { $ifNull: ["$imageUrl", null] },
-        },
-      },
-      {
-        $project: {
-          likesData: 0,
-          authorDetails: 0,
-        },
-      },
-    ];
-
-    const posts = await db
-      .collection("posts")
-      .aggregate(aggregationPipeline)
-      .toArray();
-
-    // Ensure JSON-safe values
-return posts.map((post) => ({
-  ...post,
-  _id: post._id.toString(),
-  authorId: post.authorId?.toString?.(),
-  groupId: post.groupId?.toString?.(),
-})) as unknown as PostProps[];
-
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    return [];
-  }
-}
-
-export default async function PostFeed({ groupId }: { groupId?: string }) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-
-  const posts = await getPosts(userId, groupId);
+  useEffect(() => {
+    if (isIntersecting && hasMore) {
+      loadMorePosts();
+    }
+  }, [isIntersecting, hasMore, loadMorePosts]);
 
   return (
     <div className="space-y-4">
       {posts.map((post) => (
         <Post key={post._id} post={post} />
       ))}
+
+      {/* Infinite scroll trigger */}
+      <div ref={loaderRef} className="h-10 text-center text-gray-500">
+        {isLoading && <p>Loading more posts...</p>}
+        {!hasMore && posts.length > 0 && <p>You&apos;ve reached the end!</p>}
+      </div>
+
       {posts.length === 0 && (
         <p className="text-center text-gray-500">
           No posts here yet. Start the conversation!

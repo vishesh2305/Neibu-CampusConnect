@@ -26,8 +26,10 @@ async function getGroupDetails(groupId: string, userId: string | null): Promise<
     const groupObjectId = new ObjectId(groupId);
     const group = await db.collection('groups').findOne({ _id: groupObjectId });
     if (!group) return null;
+
     const memberCount = await db.collection('group_members').countDocuments({ groupId: groupObjectId });
     let isMember = false;
+
     if (userId) {
       const membership = await db.collection('group_members').findOne({
         groupId: groupObjectId,
@@ -35,6 +37,7 @@ async function getGroupDetails(groupId: string, userId: string | null): Promise<
       });
       isMember = !!membership;
     }
+
     return {
       ...JSON.parse(JSON.stringify(group)),
       memberCount,
@@ -46,13 +49,24 @@ async function getGroupDetails(groupId: string, userId: string | null): Promise<
   }
 }
 
-// Correctly type the props for generateMetadata
+async function getGroupPosts(groupId: string) {
+  const client = await clientPromise;
+  const db = client.db();
+  const posts = await db
+    .collection('posts')
+    .find({ groupId: new ObjectId(groupId) })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  return JSON.parse(JSON.stringify(posts));
+}
+
 type Props = {
-  params: Promise<{groupId: string}>;
+  params: Promise<{ groupId: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { groupId } = await params; // No await
+  const { groupId } = await params;
   const session = await getServerSession(authOptions);
   const group = await getGroupDetails(groupId, session?.user?.id || null);
 
@@ -67,17 +81,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GroupPage({ params }: Props) {
-  const { groupId } = await params; // No await
+  const { groupId } = await params;
   const session = await getServerSession(authOptions);
   const group = await getGroupDetails(groupId, session?.user?.id || null);
 
   if (!group) notFound();
 
+  const posts = await getGroupPosts(groupId);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div className="md:col-span-2 space-y-6">
         {group.isMember && <CreatePost groupId={group._id} />}
-        <PostFeed groupId={group._id} />
+        <PostFeed initialPosts={posts} groupId={group._id} />
       </div>
 
       <div className="md:col-span-1">
@@ -94,4 +110,4 @@ export default async function GroupPage({ params }: Props) {
       </div>
     </div>
   );
-};
+}

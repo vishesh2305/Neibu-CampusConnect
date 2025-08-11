@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import React from "react";
-import { motion, AnimatePresence, useAnimate } from "motion/react";
+import { motion, useAnimate } from "motion/react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
@@ -19,9 +19,7 @@ export const Button = ({ className, children, ...props }: ButtonProps) => {
         scale: 1,
         display: "block",
       },
-      {
-        duration: 0.2,
-      },
+      { duration: 0.2 }
     );
   };
 
@@ -33,9 +31,7 @@ export const Button = ({ className, children, ...props }: ButtonProps) => {
         scale: 0,
         display: "none",
       },
-      {
-        duration: 0.2,
-      },
+      { duration: 0.2 }
     );
     await animate(
       ".check",
@@ -44,9 +40,7 @@ export const Button = ({ className, children, ...props }: ButtonProps) => {
         scale: 1,
         display: "block",
       },
-      {
-        duration: 0.2,
-      },
+      { duration: 0.2 }
     );
 
     await animate(
@@ -56,10 +50,7 @@ export const Button = ({ className, children, ...props }: ButtonProps) => {
         scale: 0,
         display: "none",
       },
-      {
-        delay: 2,
-        duration: 0.2,
-      },
+      { delay: 2, duration: 0.2 }
     );
   };
 
@@ -69,13 +60,14 @@ export const Button = ({ className, children, ...props }: ButtonProps) => {
     await animateSuccess();
   };
 
+  // Destructure and rename to avoid ESLint unused var warnings
   const {
-    onClick,
-    onDrag,
-    onDragStart,
-    onDragEnd,
-    onAnimationStart,
-    onAnimationEnd,
+    onClick: _onClick,
+    onDrag: _onDrag,
+    onDragStart: _onDragStart,
+    onDragEnd: _onDragEnd,
+    onAnimationStart: _onAnimationStart,
+    onAnimationEnd: _onAnimationEnd,
     ...buttonProps
   } = props;
 
@@ -85,8 +77,8 @@ export const Button = ({ className, children, ...props }: ButtonProps) => {
       layoutId="button"
       ref={scope}
       className={cn(
-        "flex min-w-[120px] cursor-pointer items-center justify-center gap-2 rounded-full  px-4 py-2 font-medium text-white  transition duration-200   dark:ring-offset-black",
-        className,
+        "flex min-w-[120px] cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2 font-medium text-white transition duration-200 dark:ring-offset-black",
+        className
       )}
       {...buttonProps}
       onClick={handleClick}
@@ -103,18 +95,9 @@ export const Button = ({ className, children, ...props }: ButtonProps) => {
 const Loader = () => {
   return (
     <motion.svg
-      animate={{
-        rotate: [0, 360],
-      }}
-      initial={{
-        scale: 0,
-        width: 0,
-        display: "none",
-      }}
-      style={{
-        scale: 0.5,
-        display: "none",
-      }}
+      animate={{ rotate: [0, 360] }}
+      initial={{ scale: 0, width: 0, display: "none" }}
+      style={{ scale: 0.5, display: "none" }}
       transition={{
         duration: 0.3,
         repeat: Infinity,
@@ -140,15 +123,8 @@ const Loader = () => {
 const CheckIcon = () => {
   return (
     <motion.svg
-      initial={{
-        scale: 0,
-        width: 0,
-        display: "none",
-      }}
-      style={{
-        scale: 0.5,
-        display: "none",
-      }}
+      initial={{ scale: 0, width: 0, display: "none" }}
+      style={{ scale: 0.5, display: "none" }}
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"
