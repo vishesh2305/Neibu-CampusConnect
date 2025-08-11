@@ -46,16 +46,16 @@ export default function CreateGroupForm() {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-md">
+    <div className=" p-6 rounded-lg shadow-lg">
         <h2 className="text-xl font-bold mb-4 text-white">Create a New Group</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-300">Group Name</label>
-                <input type="text" name="name" id="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" />
+                <input type="text" name="name" id="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" />
             </div>
             <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-300">Description</label>
-                <textarea name="description" id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>
+                <textarea name="description" id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="mt-1 block w-full shadow-lg border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <div className="flex justify-end">

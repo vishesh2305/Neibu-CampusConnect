@@ -49,8 +49,8 @@ export default async function ConversationList() {
     const conversations = await getConversations(session.user.id);
 
     return (
-        <div className="h-full bg-gray-950 border-r border-gray-800">
-            <div className="p-4 font-semibold text-lg border-b border-gray-800">Messages</div>
+        <div className="h-full shadow-lg ">
+            <div className="p-4 font-semibold text-lg ">Messages</div>
             <nav className="flex flex-col">
                 {conversations.map(convo => (
                     <Link href={`/messages/${convo._id}`} key={convo._id} className="p-4 flex items-center gap-4 hover:bg-gray-800 transition-colors">

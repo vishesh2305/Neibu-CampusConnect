@@ -47,7 +47,7 @@ export default function CreateEventForm() {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-md">
+    <div className=" p-6 rounded-lg shadow-lg">
       <h2 className="text-xl font-bold mb-4 text-white">Create a New Event</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input type="text" name="title" placeholder="Event Title" value={formData.title} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md" required />

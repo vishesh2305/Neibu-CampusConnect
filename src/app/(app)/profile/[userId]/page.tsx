@@ -41,7 +41,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700">
+      <div className=" p-6 rounded-lg shadow-md border border-gray-700">
         <div className="flex items-center space-x-4">
           {/* Use the user's image */}
           <Image

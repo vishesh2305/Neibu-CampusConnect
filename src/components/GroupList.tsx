@@ -27,7 +27,7 @@ export default async function GroupList() {
             <h2 className="text-xl font-bold mb-4 text-white">Discover Groups</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {groups.map((group) => (
-                    <Link href={`/groups/${group._id}`} key={group._id} className="block p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
+                    <Link href={`/groups/${group._id}`} key={group._id} className="block p-4 shadow-lg rounded-lg hover:bg-gray-700 transition-colors">
                         <h3 className="font-semibold text-white">{group.name}</h3>
                         <p className="text-sm text-gray-400 mt-1 line-clamp-2">{group.description}</p>
                     </Link>

@@ -124,7 +124,7 @@ export default function EditProfilePage() {
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Edit Your Profile</h1>
-      <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800 p-8 rounded-lg">
+      <form onSubmit={handleSubmit} className="space-y-6  p-8 rounded-lg">
 
         <div>
           <label className="block text-sm font-medium text-gray-300">Profile Picture</label>
