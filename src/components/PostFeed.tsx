@@ -1,3 +1,5 @@
+"use server"
+
 import clientPromise from "../lib/mongodb";
 import Post, { PostProps } from "./Post";
 import { getServerSession } from "next-auth";
@@ -41,13 +43,11 @@ async function getPosts(userId?: string, groupId?: string) {
           likesCount: { $size: "$likesData" },
           commentsCount: { $ifNull: ["$commentsCount", 0] },
           isLiked: userId
-            ? {
-                $in: [new ObjectId(userId), "$likesData.userId"],
-              }
+            ? { $in: [new ObjectId(userId), "$likesData.userId"] }
             : false,
           authorName: "$authorDetails.name",
           authorImage: "$authorDetails.image",
-          imageUrl: { $ifNull: ["$imageUrl", null] }, // <-- added line
+          imageUrl: { $ifNull: ["$imageUrl", null] },
         },
       },
       {
@@ -63,7 +63,14 @@ async function getPosts(userId?: string, groupId?: string) {
       .aggregate(aggregationPipeline)
       .toArray();
 
-    return JSON.parse(JSON.stringify(posts)) as PostProps[];
+    // Ensure JSON-safe values
+return posts.map((post) => ({
+  ...post,
+  _id: post._id.toString(),
+  authorId: post.authorId?.toString?.(),
+  groupId: post.groupId?.toString?.(),
+})) as unknown as PostProps[];
+
   } catch (error) {
     console.error("Error fetching posts:", error);
     return [];

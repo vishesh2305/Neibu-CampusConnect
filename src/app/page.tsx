@@ -279,10 +279,6 @@ export default function Page() {
                   onSubmit={onSubmit}
               />
           </div>
-
-
-
-
       </main>
     </div>
   );

@@ -31,7 +31,7 @@ export default function Post({
   const [showComments, setShowComments] = useState(defaultShowComments);
 
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700">
+    <div className="p-4  rounded-lg shadow-md ">
       <div className="flex items-center mb-3">
         <Image
           src={post.authorImage || '/default-avatar.png'}

@@ -1,5 +1,5 @@
-// tailwind.config.ts
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: "class", // This is essential!
@@ -51,6 +51,9 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+
+        // Your new custom color here
+        "custom-dark": "#262626",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -73,6 +76,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 };
+
 export default config;

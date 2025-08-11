@@ -6,18 +6,18 @@ import { redirect } from "next/navigation";
 import NotificationsClient from "../../../components/Notifications";
 import type { Notification } from "../../../../types/notifications";
 
-// Raw MongoDB document type
-interface NotificationDoc {
-  _id: ObjectId;
-  userId: ObjectId;
-  actorId: ObjectId;
-  postId: ObjectId;
-  type: "like" | "comment";
-  read: boolean;
-  createdAt: Date | string;
-  message?: string;
-  link?: string;
-}
+// // Raw MongoDB document type
+// interface NotificationDoc {
+//   _id: ObjectId;
+//   userId: ObjectId;
+//   actorId: ObjectId;
+//   postId: ObjectId;
+//   type: "like" | "comment";
+//   read: boolean;
+//   createdAt: Date | string;
+//   message?: string;
+//   link?: string;
+// }
 
 async function getNotifications(userId: string): Promise<Notification[]> {
   const client = await clientPromise;

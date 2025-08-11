@@ -93,7 +93,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar open={isSidebarOpen} setOpen={setSidebarOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col">
@@ -129,12 +129,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarBody>
       </Sidebar>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900">
+      <div style={{ backgroundColor: "#262626" }} className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto ">
           <div className="container mx-auto px-6 py-8">{children}</div>
         </main>
 
-        <div className="absolute bottom-5 left-1/2 -translate-x-1/2">
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 hidden md:block">
           <FloatingDock items={dockItems} />
         </div>
       </div>
