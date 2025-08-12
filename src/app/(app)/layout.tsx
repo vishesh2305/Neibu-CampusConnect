@@ -1,6 +1,8 @@
+// src/app/(app)/layout.tsx
+
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import {
   IconLayoutDashboard,
@@ -17,13 +19,35 @@ import {
 } from "@tabler/icons-react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { FloatingDock } from "@/components/ui/floating-dock";
+import { io, Socket } from 'socket.io-client';
+import toast from 'react-hot-toast';
+
+let socket: Socket;
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
 
-  // Sidebar navigation items
+  useEffect(() => {
+    if (session?.user?.id) {
+      socket = io('http://localhost:3001');
+
+      socket.emit('register-user', session.user.id);
+
+      socket.on('receive-notification', (notification) => {
+        toast.success(`New notification: ${notification.type}`);
+        setNotificationCount(prev => prev + 1);
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [session]);
+
   const navItems = [
+    //... navItems from your code
     {
       label: "Dashboard",
       href: "/dashboard",
@@ -53,7 +77,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       href: "/search",
       icon: <IconSearch className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
     },
-        {
+    {
       label: "Global Chat",
       href: "/global-chat",
       icon: <IconWorld className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
@@ -68,8 +92,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     });
   }
 
-  // Prepare dock items for FloatingDock
   const dockItems = [
+    //... dockItems from your code
     {
       title: "Menu",
       icon: <IconMenu2 className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />,
@@ -93,8 +117,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     },
     {
       title:"Notifications",
-      icon: <IconBell className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <div className="relative">
+          <IconBell className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
+          {notificationCount > 0 && (
+            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
+          )}
+        </div>
+      ),
       href:"/notifications",
+    },
+    {
+      title: "Global Chat",
+      icon: <IconWorld className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />,
+      href: "/global-chat",
     },
   ];
 

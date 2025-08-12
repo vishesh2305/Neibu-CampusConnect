@@ -4,6 +4,33 @@ import { authOptions } from "../../../../../lib/authOptions";
 import clientPromise from "../../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 
+// Notification document type
+interface NotificationDoc {
+  _id?: ObjectId;
+  userId: ObjectId;
+  actorId: ObjectId;
+  type: "like";
+  postId: ObjectId;
+  read: boolean;
+  createdAt: Date;
+}
+
+// Helper to dispatch notification
+async function dispatchNotification(notification: NotificationDoc) {
+  try {
+    await fetch("http://localhost:3001/api/dispatch-notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        recipientId: notification.userId.toString(),
+        notification,
+      }),
+    });
+  } catch (error) {
+    console.error("Failed to dispatch notification", error);
+  }
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ postId: string }> }
@@ -31,7 +58,6 @@ export async function POST(
     });
 
     if (existingLike) {
-      // User has already liked; unlike the post
       await db.collection("likes").deleteOne({ _id: existingLike._id });
       await db.collection("posts").updateOne(
         { _id: postObjectId },
@@ -46,7 +72,6 @@ export async function POST(
 
       return NextResponse.json({ message: "Post unliked" }, { status: 200 });
     } else {
-      // Insert new like
       await db.collection("likes").insertOne({
         postId: postObjectId,
         userId: userId,
@@ -61,20 +86,32 @@ export async function POST(
       const post = await db.collection("posts").findOne({ _id: postObjectId });
 
       if (post && post.authorId.toString() !== session.user.id) {
-        await db.collection("notifications").insertOne({
+        const notification: NotificationDoc = {
           userId: post.authorId,
           actorId: userId,
           type: "like",
           postId: postObjectId,
           read: false,
           createdAt: new Date(),
-        });
+        };
+        const result = await db.collection("notifications").insertOne(notification);
+
+        // Dispatch the notification
+        const fullNotification = (await db
+          .collection("notifications")
+          .findOne({ _id: result.insertedId })) as NotificationDoc;
+        if (fullNotification) {
+          await dispatchNotification(fullNotification);
+        }
       }
 
       return NextResponse.json({ message: "Post liked" }, { status: 200 });
     }
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Something went wrong" },
+      { status: 500 }
+    );
   }
 }

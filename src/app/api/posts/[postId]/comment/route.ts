@@ -4,6 +4,33 @@ import { authOptions } from "../../../../../lib/authOptions";
 import clientPromise from "../../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 
+// Notification document type for MongoDB
+interface NotificationDoc {
+  _id?: ObjectId;
+  userId: ObjectId;
+  actorId: ObjectId;
+  type: "comment";
+  postId: ObjectId;
+  read: boolean;
+  createdAt: Date;
+}
+
+// Helper to dispatch notification
+async function dispatchNotification(notification: NotificationDoc) {
+  try {
+    await fetch("http://localhost:3001/api/dispatch-notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        recipientId: notification.userId.toString(),
+        notification,
+      }),
+    });
+  } catch (error) {
+    console.error("Failed to dispatch notification", error);
+  }
+}
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ postId: string }> }
@@ -26,7 +53,10 @@ export async function GET(
     return NextResponse.json(comments, { status: 200 });
   } catch (error) {
     console.error("GET_COMMENTS_ERROR", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -34,12 +64,12 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ postId: string }> }
 ) {
+  const { postId } = await params;
+
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-
-  const { postId } = await params;
 
   if (!ObjectId.isValid(postId)) {
     return NextResponse.json({ message: "Invalid Post ID" }, { status: 400 });
@@ -49,16 +79,20 @@ export async function POST(
     const { text } = await req.json();
 
     if (!text || typeof text !== "string" || text.trim().length === 0) {
-      return NextResponse.json({ message: "Comment text is required." }, { status: 400 });
+      return NextResponse.json(
+        { message: "Comment text is required." },
+        { status: 400 }
+      );
     }
 
     const client = await clientPromise;
     const db = client.db();
     const postObjectId = new ObjectId(postId);
+    const userId = new ObjectId(session.user.id);
 
     const newComment = {
       postId: postObjectId,
-      authorId: new ObjectId(session.user.id),
+      authorId: userId,
       authorName: session.user.name,
       text: text.trim(),
       createdAt: new Date(),
@@ -74,19 +108,31 @@ export async function POST(
     // Notifications
     const post = await db.collection("posts").findOne({ _id: postObjectId });
     if (post && post.authorId.toString() !== session.user.id) {
-      await db.collection("notifications").insertOne({
+      const notification: NotificationDoc = {
         userId: post.authorId,
-        actorId: new ObjectId(session.user.id),
+        actorId: userId,
         type: "comment",
         postId: postObjectId,
         read: false,
         createdAt: new Date(),
-      });
+      };
+      const result = await db.collection("notifications").insertOne(notification);
+
+      // Dispatch the notification
+      const fullNotification = (await db
+        .collection("notifications")
+        .findOne({ _id: result.insertedId })) as NotificationDoc;
+      if (fullNotification) {
+        await dispatchNotification(fullNotification);
+      }
     }
 
     return NextResponse.json({ message: "Comment added" }, { status: 201 });
   } catch (error) {
     console.error("COMMENT_POST_ERROR", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
