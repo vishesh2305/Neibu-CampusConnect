@@ -30,7 +30,8 @@ export default function PostFeed({
     if (isLoading || !hasMore) return;
     setIsLoading(true);
 
-    const newPosts = await getPosts(session?.user?.id, groupId, page);
+    // ✅ Convert page number to string to match getPosts type
+    const newPosts = await getPosts(session?.user?.id, groupId, page.toString());
 
     if (newPosts.length > 0) {
       setPosts((prevPosts) => [...prevPosts, ...newPosts]);

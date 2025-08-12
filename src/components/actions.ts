@@ -7,27 +7,34 @@ import { ObjectId, Document } from "mongodb";
 import { PostProps } from "./Post";
 
 export async function getPosts(
-  userId?: string,
+  currentUserId?: string,
   groupId?: string,
+  profileUserId?: string, // Add this new parameter
   page = 1,
   limit = 10
 ): Promise<PostProps[]> {
-  if (!userId) return [];
+  if (!currentUserId) return [];
 
   try {
     const client = await clientPromise;
     const db = client.db();
-    const currentUserObjectId = new ObjectId(userId);
+    const currentUserObjectId = new ObjectId(currentUserId);
 
     const skip = (page - 1) * limit;
 
     let matchStage: Document = {};
 
-    if (groupId) {
+    if (profileUserId) {
+      // If we are on a profile page, only show posts by that user
+      matchStage.authorId = new ObjectId(profileUserId);
+    } else if (groupId) {
+      // If in a group, show posts for that group
       matchStage.groupId = new ObjectId(groupId);
     } else {
+      // For the main dashboard feed
       const followingCursor = db.collection('followers').find({ followerId: currentUserObjectId });
       const followingIds = await followingCursor.map(doc => doc.followingId).toArray();
+      followingIds.push(currentUserObjectId); // Also include user's own posts
 
       const groupsCursor = db.collection('group_members').find({ userId: currentUserObjectId });
       const groupIds = await groupsCursor.map(doc => doc.groupId).toArray();
