@@ -13,6 +13,7 @@ import {
   IconLogout,
   IconMenu2,
   IconBell,
+  IconWorld,
 } from "@tabler/icons-react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { FloatingDock } from "@/components/ui/floating-dock";
@@ -51,6 +52,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       label: "Search",
       href: "/search",
       icon: <IconSearch className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+    },
+        {
+      label: "Global Chat",
+      href: "/global-chat",
+      icon: <IconWorld className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
     },
   ];
 
