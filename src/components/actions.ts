@@ -6,14 +6,18 @@ import clientPromise from "../lib/mongodb";
 import { ObjectId, Document } from "mongodb";
 import { PostProps } from "./Post";
 
+function isValidObjectId(id?: string): id is string {
+  return !!id && ObjectId.isValid(id);
+}
+
 export async function getPosts(
   currentUserId?: string,
   groupId?: string,
-  profileUserId?: string, // Add this new parameter
+  profileUserId?: string, 
   page = 1,
   limit = 10
 ): Promise<PostProps[]> {
-  if (!currentUserId) return [];
+  if (!currentUserId || !isValidObjectId(currentUserId)) return [];
 
   try {
     const client = await clientPromise;
@@ -24,20 +28,25 @@ export async function getPosts(
 
     let matchStage: Document = {};
 
-    if (profileUserId) {
-      // If we are on a profile page, only show posts by that user
+    if (isValidObjectId(profileUserId)) {
       matchStage.authorId = new ObjectId(profileUserId);
-    } else if (groupId) {
-      // If in a group, show posts for that group
+    } else if (isValidObjectId(groupId)) {
       matchStage.groupId = new ObjectId(groupId);
     } else {
-      // For the main dashboard feed
-      const followingCursor = db.collection('followers').find({ followerId: currentUserObjectId });
-      const followingIds = await followingCursor.map(doc => doc.followingId).toArray();
-      followingIds.push(currentUserObjectId); // Also include user's own posts
+      const followingCursor = db
+        .collection("followers")
+        .find({ followerId: currentUserObjectId });
+      const followingIds = await followingCursor
+        .map(doc => doc.followingId)
+        .toArray();
+      followingIds.push(currentUserObjectId); 
 
-      const groupsCursor = db.collection('group_members').find({ userId: currentUserObjectId });
-      const groupIds = await groupsCursor.map(doc => doc.groupId).toArray();
+      const groupsCursor = db
+        .collection("group_members")
+        .find({ userId: currentUserObjectId });
+      const groupIds = await groupsCursor
+        .map(doc => doc.groupId)
+        .toArray();
 
       matchStage = {
         $or: [
@@ -52,26 +61,42 @@ export async function getPosts(
       { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
-      { $lookup: { from: 'users', localField: 'authorId', foreignField: '_id', as: 'authorDetails' }},
-      { $unwind: '$authorDetails' },
-      { $lookup: { from: "likes", localField: "_id", foreignField: "postId", as: "likesData"}},
+      {
+        $lookup: {
+          from: "users",
+          localField: "authorId",
+          foreignField: "_id",
+          as: "authorDetails"
+        }
+      },
+      { $unwind: "$authorDetails" },
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "postId",
+          as: "likesData"
+        }
+      },
       {
         $addFields: {
           likesCount: { $size: "$likesData" },
           commentsCount: { $ifNull: ["$commentsCount", 0] },
           isLiked: { $in: [currentUserObjectId, "$likesData.userId"] },
-          authorName: '$authorDetails.name',
-          authorImage: '$authorDetails.image',
-          imageUrl: { $ifNull: ["$imageUrl", null] },
-        },
+          authorName: "$authorDetails.name",
+          authorImage: "$authorDetails.image",
+          imageUrl: { $ifNull: ["$imageUrl", null] }
+        }
       },
-      { $project: { likesData: 0, authorDetails: 0 } },
+      { $project: { likesData: 0, authorDetails: 0 } }
     ];
 
-    const posts = await db.collection("posts").aggregate(aggregationPipeline).toArray();
-    
-    return JSON.parse(JSON.stringify(posts));
+    const posts = await db
+      .collection("posts")
+      .aggregate(aggregationPipeline)
+      .toArray();
 
+    return JSON.parse(JSON.stringify(posts));
   } catch (error) {
     console.error("Error fetching posts:", error);
     return [];
