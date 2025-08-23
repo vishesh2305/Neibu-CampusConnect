@@ -5,37 +5,18 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../../../lib/authOptions";
 import clientPromise from "../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
+import { z } from "zod";
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
-    return NextResponse.json({ message: "You must be logged in to post." }, { status: 401 });
-  }
+const postSchema = z.object({
+  content: z
+    .string()
+    .min(1, { message: "Content is required." })
+    .max(1000, { message: "Content cannot exceed 1000 characters." }),
+  groupId: z.string().optional(),
+  imageUrl: z.string().url({ message: "Invalid image URL." }).optional(),
+});
 
-  try {
-    const { content, groupId, imageUrl } = await req.json();
-
-    if (!content || typeof content !== "string" || content.trim().length === 0) {
-      return NextResponse.json({ message: "Post content is required." }, { status: 400 });
-    }
-
-    const client = await clientPromise;
-    const db = client.db();
-
-    if (groupId) {
-      if (!ObjectId.isValid(groupId)) {
-        return NextResponse.json({ message: "Invalid Group ID" }, { status: 400 });
-      }
-      const membership = await db.collection('group_members').findOne({
-        groupId: new ObjectId(groupId),
-        userId: new ObjectId(session.user.id),
-      });
-      if (!membership) {
-        return NextResponse.json({ message: "You are not a member of this group." }, { status: 403 });
-      }
-    }
-
-  interface NewPost {
+interface NewPost {
   content: string;
   authorId: ObjectId;
   authorName?: string | null;
@@ -45,6 +26,51 @@ export async function POST(req: Request) {
   imageUrl?: string;
 }
 
+export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return NextResponse.json(
+      { message: "You must be logged in to post." },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await req.json();
+    const parsed = postSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { message: parsed.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+
+    const { content, groupId, imageUrl } = parsed.data;
+
+    const client = await clientPromise;
+    const db = client.db();
+
+    if (groupId) {
+      if (!ObjectId.isValid(groupId)) {
+        return NextResponse.json(
+          { message: "Invalid Group ID" },
+          { status: 400 }
+        );
+      }
+
+      const membership = await db.collection("group_members").findOne({
+        groupId: new ObjectId(groupId),
+        userId: new ObjectId(session.user.id),
+      });
+
+      if (!membership) {
+        return NextResponse.json(
+          { message: "You are not a member of this group." },
+          { status: 403 }
+        );
+      }
+    }
 
     const newPost: NewPost = {
       content: content.trim(),
@@ -58,7 +84,7 @@ export async function POST(req: Request) {
       newPost.groupId = new ObjectId(groupId);
     }
 
-    if (imageUrl && typeof imageUrl === "string" && imageUrl.trim() !== "") {
+    if (imageUrl) {
       newPost.imageUrl = imageUrl.trim();
     }
 
@@ -69,7 +95,17 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST_CREATION_ERROR", error);
-    return NextResponse.json({ message: "An internal server error occurred." }, { status: 500 });
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { message: error.issues[0].message },
+        { status: 400 }
+      );
+    }
+
+    console.error("Unexpected error creating Post:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

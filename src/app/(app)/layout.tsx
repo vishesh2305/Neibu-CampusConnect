@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useUserStore } from "@/store/userStore";
 import {
   IconLayoutDashboard,
   IconUsers,
@@ -26,25 +27,29 @@ let socket: Socket;
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
+  const {setSession} = useUserStore();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
-    if (session?.user?.id) {
-      socket = io('http://localhost:3001');
-
-      socket.emit('register-user', session.user.id);
-
-      socket.on('receive-notification', (notification) => {
-        toast.success(`New notification: ${notification.type}`);
-        setNotificationCount(prev => prev + 1);
-      });
-
-      return () => {
-        socket.disconnect();
-      };
+    if (session) {
+      setSession(session);
     }
-  }, [session]);
+
+    if (!session?.user?.id) return;
+
+    socket = io("http://localhost:3001");
+    socket.emit("register-user", session.user.id);
+
+    socket.on("receive-notification", (notification) => {
+      toast.success(`New notification: ${notification.type}`);
+      setNotificationCount(notificationCount + 1);
+    });
+
+    return () => {
+      socket?.disconnect();
+    };
+  }, [session?.user?.id, session, setSession, setNotificationCount, notificationCount]);
 
   const navItems = [
     //... navItems from your code

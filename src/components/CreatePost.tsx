@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { PutBlobResult } from "@vercel/blob";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import { FileUpload } from "./ui/file-upload";
-import { Button } from "./ui/stateful-button"; // 1. Import the stateful button
+import { Button } from "./ui/stateful-button"; 
 
 export default function CreatePost({ groupId }: { groupId?: string }) {
   const placeholders = [
@@ -27,7 +27,6 @@ export default function CreatePost({ groupId }: { groupId?: string }) {
     setFile(files.length > 0 ? files[0] : null);
   };
 
-  // 3. Update the handleSubmit function
   const handleSubmit = async (e?: React.MouseEvent<HTMLButtonElement> | React.FormEvent) => {
     if (e && typeof e.preventDefault === 'function') {
         e.preventDefault();

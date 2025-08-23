@@ -3,8 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../../../../lib/authOptions";
 import clientPromise from "../../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
+import * as z from 'zod';
 
-// Notification document type for MongoDB
 interface NotificationDoc {
   _id?: ObjectId;
   userId: ObjectId;
@@ -15,7 +15,10 @@ interface NotificationDoc {
   createdAt: Date;
 }
 
-// Helper to dispatch notification
+const commentSchema = z.object({
+  test: z.string().min(1, {message: "Comment text is required."}).max(1000, {message: "Comment cannnot exceed 1000 characters."}).trim(),
+});
+
 async function dispatchNotification(notification: NotificationDoc) {
   try {
     await fetch("http://localhost:3001/api/dispatch-notification", {
@@ -76,14 +79,18 @@ export async function POST(
   }
 
   try {
-    const { text } = await req.json();
+    const body = await req.json();
+    const parsed = commentSchema.safeParse(body);
 
-    if (!text || typeof text !== "string" || text.trim().length === 0) {
+    if(!parsed.success){
       return NextResponse.json(
-        { message: "Comment text is required." },
-        { status: 400 }
+        {message: parsed.error.issues[0].message},
+        {status: 400}
       );
     }
+
+    const text = parsed.data;
+
 
     const client = await clientPromise;
     const db = client.db();
@@ -94,7 +101,7 @@ export async function POST(
       postId: postObjectId,
       authorId: userId,
       authorName: session.user.name,
-      text: text.trim(),
+      text,
       createdAt: new Date(),
     };
 
@@ -129,6 +136,11 @@ export async function POST(
 
     return NextResponse.json({ message: "Comment added" }, { status: 201 });
   } catch (error) {
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ message: error.issues[0].message }, { status: 400 });
+    }
+
     console.error("COMMENT_POST_ERROR", error);
     return NextResponse.json(
       { message: "Internal server error" },

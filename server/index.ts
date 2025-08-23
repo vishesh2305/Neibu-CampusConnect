@@ -3,6 +3,8 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import express from 'express';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { createClient} from "redis";
 
 const app = express();
 const httpServer = createServer(app);
@@ -11,6 +13,13 @@ const io = new Server(httpServer, {
     origin: "http://localhost:3000",
     methods: ["GET", "POST"]
   }
+});
+
+const pubClient = createClient({ url: "redis://localhost:6379" });
+const subClient= pubClient.duplicate();
+
+Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
+  io.adapter(createAdapter(pubClient, subClient));
 });
 
 app.use(express.json());

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useUserStore } from '@/store/userStore';
 import {
   HomeIcon,
   UserIcon,
@@ -26,7 +26,7 @@ function classNames(...classes: string[]) {
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const {session} = useUserStore();
   const isAdmin = session?.user?.role === 'admin';
 
   return (

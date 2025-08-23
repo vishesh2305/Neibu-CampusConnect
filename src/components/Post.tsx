@@ -5,12 +5,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; // Import useRouter
-import { useSession } from 'next-auth/react'; // Import useSession
 import { formatDistanceToNow } from 'date-fns';
 import { ChatBubbleOvalLeftEllipsisIcon, TrashIcon } from '@heroicons/react/24/outline';
 import LikeButton from './LikeButton';
 import CommentSection from './CommentSection';
 import Image from 'next/image';
+import { useUserStore } from '@/store/userStore';
 
 export interface PostProps {
   _id: string;
@@ -33,10 +33,9 @@ export default function Post({
   defaultShowComments?: boolean;
 }) {
   const [showComments, setShowComments] = useState(defaultShowComments);
-  const { data: session } = useSession(); // Get the current user's session
-  const router = useRouter(); // Get the router instance
+  const {session} = useUserStore();
+  const router = useRouter(); 
 
-  // Determine if the current user can delete the post
   const isAuthor = session?.user?.id === post.authorId;
   const isAdmin = session?.user?.role === 'admin';
   const canDelete = isAuthor || isAdmin;
