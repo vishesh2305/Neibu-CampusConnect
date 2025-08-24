@@ -4,26 +4,39 @@ import { Server } from 'socket.io';
 import express from 'express';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
+import { ObjectId, MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '.env.local' });
+
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
+}
+
+export const client = new MongoClient(uri);
+export const db = client.db('test');
 
 const app = express();
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
   },
 });
 
+// Redis adapter
 (async () => {
   try {
-    const pubClient = createClient({ url: "redis://localhost:6379" });
+    const pubClient = createClient({ url: 'redis://localhost:6379' });
     const subClient = pubClient.duplicate();
     await Promise.all([pubClient.connect(), subClient.connect()]);
     io.adapter(createAdapter(pubClient, subClient));
-    console.log("Redis adapter connected.");
+    console.log('Redis adapter connected.');
   } catch (err) {
-    console.warn("Redis not available. Using default in-memory adapter.");
+    console.warn('Redis not available. Using default in-memory adapter.');
   }
 })();
 
@@ -43,6 +56,36 @@ io.on('connection', (socket) => {
     socket.join(conversationId);
     console.log(`User ${socket.id} joined conversation ${conversationId}`);
   });
+
+  socket.on('join-group-chat', (groupId: string) => {
+    socket.join(groupId);
+    console.log(`User ${socket.id} joined group chat ${groupId}`);
+  });
+
+  socket.on(
+    'send-group-message',
+    async (message: { groupId: string; text: string; senderId: string; senderName: string }) => {
+      try {
+        await client.connect();
+        const messageDocument = {
+          groupId: new ObjectId(message.groupId),
+          senderId: new ObjectId(message.senderId),
+          senderName: message.senderName,
+          text: message.text,
+          createdAt: new Date(),
+        };
+
+        const result = await db.collection('group_messages').insertOne(messageDocument);
+        const fullMessage = {
+          ...messageDocument,
+          _id: result.insertedId,
+        };
+        socket.broadcast.to(message.groupId).emit('receive-group-message', fullMessage);
+      } catch (error) {
+        console.error('Error saving group message:', error);
+      }
+    }
+  );
 
   socket.on('send-message', (message: any) => {
     socket.to(message.conversationId).emit('receive-message', message);

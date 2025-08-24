@@ -17,6 +17,7 @@ import {
   IconMenu2,
   IconBell,
   IconWorld,
+  IconBook,
 } from "@tabler/icons-react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { FloatingDock } from "@/components/ui/floating-dock";
@@ -27,7 +28,7 @@ let socket: Socket;
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
-  const {setSession} = useUserStore();
+  const {setSession, setSocket} = useUserStore();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
 
@@ -39,6 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (!session?.user?.id) return;
 
     socket = io("http://localhost:3001");
+    setSocket(socket);
     socket.emit("register-user", session.user.id);
 
     socket.on("receive-notification", (notification) => {
@@ -48,8 +50,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     return () => {
       socket?.disconnect();
+      setSocket(null);
     };
-  }, [session?.user?.id, session, setSession, setNotificationCount, notificationCount]);
+  }, [session, setSession, setSocket]);
 
   const navItems = [
     //... navItems from your code
@@ -86,6 +89,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       label: "Global Chat",
       href: "/global-chat",
       icon: <IconWorld className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+    },
+    {
+      label: "Academic",
+      href: "/academic",
+      icon: <IconBook className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
     },
   ];
 

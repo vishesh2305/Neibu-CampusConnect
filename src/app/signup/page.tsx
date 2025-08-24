@@ -17,7 +17,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-    const testimonials = [
+  const testimonials = [
     {
       quote: "This platform is amazing! It's so easy to use and has helped me a lot.",
       name: "Vishesh",
@@ -53,9 +53,12 @@ export default function SignupPage() {
       return;
     }
 
-    if (!email.includes('.edu')) {
-        setError('A valid .edu email address is required.');
-        return;
+    // ✅ Correct regex for .edu or .edu.xx (like .edu.in)
+    const eduEmailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.edu(\.[A-Za-z]{2,})?$/;
+
+    if (!eduEmailRegex.test(email)) {
+      setError('Please use a valid university email (e.g. johndoe@xyz.edu or johndoe@xyz.edu.in).');
+      return;
     }
 
     if (password !== confirmPassword) {
@@ -68,9 +71,7 @@ export default function SignupPage() {
     try {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: `${firstname} ${lastname}`,
           email,
@@ -90,13 +91,11 @@ export default function SignupPage() {
       setError('An error occurred. Please try again.');
       console.error('Registration failed:', error);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-
-
     <div className=" flex items-center justify-evenly min-h-screen ">
       <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
         <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
@@ -107,11 +106,11 @@ export default function SignupPage() {
         </p>
 
         <form className="my-8" onSubmit={handleSubmit}>
-            {error && (
-                <p className="text-sm text-red-500 bg-red-900/20 p-3 rounded-md mb-4">
-                    {error}
-                </p>
-            )}
+          {error && (
+            <p className="text-sm text-red-500 bg-red-900/20 p-3 rounded-md mb-4">
+              {error}
+            </p>
+          )}
           <div className="mb-4 flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
             <LabelInputContainer>
               <Label htmlFor="firstname">First name</Label>
@@ -158,24 +157,19 @@ export default function SignupPage() {
         </p>
       </div>
 
-
       <div className="hidden md:flex flex-col items-center justify-center w-1/2 p-10 text-white">
         <AnimatedTestimonials testimonials={testimonials} />
       </div>
-
-
     </div>
   );
 }
 
-const BottomGradient = () => {
-  return (
-    <>
-      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
-      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
-    </>
-  );
-};
+const BottomGradient = () => (
+  <>
+    <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
+    <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
+  </>
+);
 
 const LabelInputContainer = ({
   children,
@@ -183,10 +177,8 @@ const LabelInputContainer = ({
 }: {
   children: React.ReactNode;
   className?: string;
-}) => {
-  return (
-    <div className={cn("flex w-full flex-col space-y-2", className)}>
-      {children}
-    </div>
-  );
-};
+}) => (
+  <div className={cn("flex w-full flex-col space-y-2", className)}>
+    {children}
+  </div>
+);
