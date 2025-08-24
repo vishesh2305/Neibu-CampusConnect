@@ -170,7 +170,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <IconLogout className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
                 ),
               }}
-              onClick={() => signOut()}
+              onClick={() => signOut({ callbackUrl: '/' })}
             />
           </div>
         </SidebarBody>

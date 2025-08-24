@@ -25,7 +25,7 @@ export default function Page() {
   const { data: session } = useSession();
 
   const navLinks = [
-    { name: "Home", link: "/" },
+    { name: "Home", link: "/dashboard" },
     { name: "Log In", link: "/login" },
     { name: "Sign Up", link: "/signup" },
   ];

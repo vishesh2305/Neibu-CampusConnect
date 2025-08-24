@@ -14,6 +14,7 @@ const postSchema = z.object({
     .max(1000, { message: "Content cannot exceed 1000 characters." }),
   groupId: z.string().optional(),
   imageUrl: z.string().url({ message: "Invalid image URL." }).optional(),
+  pollOptions: z.array(z.string().min(1).max(100)).optional(),
 });
 
 interface NewPost {
@@ -24,6 +25,9 @@ interface NewPost {
   createdAt: Date;
   groupId?: ObjectId;
   imageUrl?: string;
+  poll?:{
+    options: {text: string; votes: ObjectId[]}[];
+  };
 }
 
 export async function POST(req: Request) {
@@ -46,7 +50,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { content, groupId, imageUrl } = parsed.data;
+    const { content, groupId, imageUrl, pollOptions } = parsed.data;
 
     const client = await clientPromise;
     const db = client.db();
@@ -78,6 +82,7 @@ export async function POST(req: Request) {
       authorName: session.user.name,
       authorImage: session.user.image,
       createdAt: new Date(),
+      
     };
 
     if (groupId) {
@@ -88,12 +93,21 @@ export async function POST(req: Request) {
       newPost.imageUrl = imageUrl.trim();
     }
 
+    if(pollOptions && pollOptions.length >=2){
+      newPost.poll = {
+        options: pollOptions.map(option => ({
+          text: option,
+          votes: [],
+        })),
+      };
+    }
+
     const result = await db.collection("posts").insertOne(newPost);
 
-    return NextResponse.json(
-      { message: "Post created successfully", postId: result.insertedId },
-      { status: 201 }
-    );
+    const createdPost = await db.collection("posts").findOne({ _id: result.insertedId });
+
+    return NextResponse.json(createdPost,{ status: 201 });
+    
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
