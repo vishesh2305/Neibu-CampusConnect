@@ -9,9 +9,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import FollowButton from "@/components/FollowButton";
 import MessageButton from "@/components/MessageButton";
-import PostFeed from "@/components/PostFeed";
 import { getPosts } from "@/components/actions";
 import { PencilSquareIcon } from "@heroicons/react/24/solid";
+import ProfileTabs from "@/components/ProfileTabs"; // Import the new component
 
 interface UserProfile {
   _id: string;
@@ -70,12 +70,7 @@ async function getUserProfile(
   }
 }
 
-// ✅ Corrected Next.js 15 typing for params
-export default async function ProfilePage({
-  params,
-}: {
-  params: Promise<{ userId: string }>;
-}) {
+export default async function ProfilePage({ params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params;
 
   const session = await getServerSession(authOptions);
@@ -89,10 +84,8 @@ export default async function ProfilePage({
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {/* Profile Card */}
       <div className="p-6 rounded-lg shadow-md border border-gray-700">
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-          {/* Profile Picture & Basic Info */}
           <div className="flex items-center space-x-4">
             <Image
               src={user.image || "/default-avatar.png"}
@@ -119,8 +112,6 @@ export default async function ProfilePage({
               </div>
             </div>
           </div>
-
-          {/* Action Buttons */}
           <div className="flex items-center gap-2">
             {isOwnProfile ? (
               <Link
@@ -141,8 +132,6 @@ export default async function ProfilePage({
             )}
           </div>
         </div>
-
-        {/* Profile Information */}
         <div className="mt-6 border-t border-gray-700 pt-6">
           <h2 className="text-xl font-semibold mb-4 text-white">
             Profile Information
@@ -163,14 +152,7 @@ export default async function ProfilePage({
           </div>
         </div>
       </div>
-
-      {/* User's Post Feed */}
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-4">
-          Posts by {user.name}
-        </h2>
-        <PostFeed initialPosts={initialPosts} />
-      </div>
+      <ProfileTabs userId={user._id} initialPosts={initialPosts} />
     </div>
   );
 }

@@ -52,10 +52,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       socket?.disconnect();
       setSocket(null);
     };
-  }, [session, setSession, setSocket]);
+  }, [session, setSession, setSocket, notificationCount]);
 
   const navItems = [
-    //... navItems from your code
     {
       label: "Dashboard",
       href: "/dashboard",

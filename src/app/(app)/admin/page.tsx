@@ -1,48 +1,86 @@
-// src/app/(app)/admin/page.tsx
+"use client";
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../../lib/authOptions";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import clientPromise from "../../../lib/mongodb";
-import AdminPostList from "../../../components/AdminPostList";
+import { getAllPosts, AdminPost } from "./actions";
+import AdminUserList from "@/components/AdminUserList";
 
-interface AdminPost {
-  _id: string;
-  content: string;
-  authorName: string;
-  createdAt: string;
-}
+export default function AdminDashboard() {
+  const { data: session, status } = useSession();
+  const [activeTab, setActiveTab] = useState<"posts" | "users">("posts");
+  const [posts, setPosts] = useState<AdminPost[]>([]);
 
-async function getAllPosts(): Promise<AdminPost[]> {
-    try {
-        const client = await clientPromise;
-        const db = client.db();
-        const posts = await db.collection('posts')
-            .find({})
-            .sort({ createdAt: -1 })
-            .project({ content: 1, authorName: 1, createdAt: 1 }) // Only fetch necessary fields
-            .toArray();
-        return JSON.parse(JSON.stringify(posts));
-    } catch (error) {
-        console.error("Failed to fetch all posts for admin", error);
-        return [];
+  useEffect(() => {
+    if (activeTab === "posts") {
+      getAllPosts().then(setPosts);
     }
-}
+  }, [activeTab]);
 
-export default async function AdminDashboard() {
-  const session = await getServerSession(authOptions);
-
-
-  if (session?.user?.role !== "admin") {
-    redirect("/dashboard"); 
+  if (status === "loading") {
+    return <p>Loading...</p>;
   }
 
-  const posts = await getAllPosts();
+  if (session?.user?.role !== "admin") {
+    redirect("/dashboard");
+  }
+
+  const tabStyles =
+    "px-4 py-2 font-semibold text-sm rounded-t-lg transition-colors";
+  const activeTabStyles = "bg-gray-800 text-white";
+  const inactiveTabStyles = "text-gray-400 hover:bg-gray-800/50";
 
   return (
     <div className="max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-white mb-6">Admin Dashboard - Manage Posts</h1>
-      <AdminPostList initialPosts={posts} />
+      <h1 className="text-3xl font-bold text-white mb-6">Admin Dashboard</h1>
+      <div className="border-b border-gray-700 mb-6">
+        <nav className="flex space-x-2">
+          <button
+            onClick={() => setActiveTab("posts")}
+            className={`${tabStyles} ${
+              activeTab === "posts" ? activeTabStyles : inactiveTabStyles
+            }`}
+          >
+            Manage Posts
+          </button>
+          <button
+            onClick={() => setActiveTab("users")}
+            className={`${tabStyles} ${
+              activeTab === "users" ? activeTabStyles : inactiveTabStyles
+            }`}
+          >
+            Manage Users
+          </button>
+        </nav>
+      </div>
+
+      <div>
+        {activeTab === "posts" && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Posts</h2>
+            {posts.length === 0 ? (
+              <p className="text-gray-400">No posts found.</p>
+            ) : (
+              <ul className="space-y-2">
+                {posts.map((post) => (
+                  <li
+                    key={post._id}
+                    className="bg-gray-900 p-3 rounded-lg shadow"
+                  >
+                    <p className="font-semibold">{post.authorName}</p>
+                    <p className="text-gray-300">{post.content}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(post.createdAt).toLocaleString()}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {activeTab === "users" && <AdminUserList />}
+      </div>
     </div>
   );
 }
