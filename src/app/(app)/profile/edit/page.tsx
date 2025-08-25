@@ -5,6 +5,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { PutBlobResult } from '@vercel/blob';
 import Image from "next/image";
+import ChangePasswordForm from "@/components/ChangePasswordForm";
+import DeleteAccountZone from "@/components/DeleteAccountZone";
+import { Delete } from "lucide-react";
 
 type UserProfile = {
   name: string;
@@ -164,6 +167,8 @@ export default function EditProfilePage() {
           </button>
         </div>
       </form>
+      <ChangePasswordForm />
+      <DeleteAccountZone />
     </div>
   );
 }

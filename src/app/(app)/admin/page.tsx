@@ -81,6 +81,14 @@ export default function AdminDashboard() {
 
         {activeTab === "users" && <AdminUserList />}
       </div>
+
+      <div>
+        {/* The AdminPostList now needs to fetch its own data or be adapted */}
+        {activeTab === 'posts' && <p>Post management would be here. Refactor AdminPostList to fetch its own data similar to AdminUserList.</p>}
+        {activeTab === 'users' && <AdminUserList />}
+      </div>
     </div>
+
+
   );
 }
