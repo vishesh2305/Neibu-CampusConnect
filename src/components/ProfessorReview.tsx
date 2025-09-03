@@ -110,30 +110,30 @@ export default function ProfessorReview() {
   return (
     <div className="mt-8">
         {/* Review Submission Form */}
-        <div className="mb-8 p-6 bg-gray-800 rounded-lg">
+        <div className="mb-8 p-6 shadow-md rounded-lg">
             <h2 className="text-xl font-bold mb-4 text-white">Write a Review</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <select value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} className="w-full bg-gray-700 p-2 rounded-md">
-                    <option value="">Select a Course to Review</option>
+            <form onSubmit={handleSubmit} className="space-y-4 p-2">
+                <select value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} className="w-9/10 cursor-pointer bg-gray-700 p-2 rounded-md">
+                    <option value="" className='p-2'>Select a Course to Review</option>
                     {courses.map(course => (
                         <option key={course._id} value={course._id}>{course.name} - {course.professor}</option>
                     ))}
                 </select>
                 <div className="flex items-center gap-2">
                     <label className="text-white">Rating:</label>
-                    <input type="range" min="1" max="5" value={rating} onChange={e => setRating(Number(e.target.value))} className="w-full"/>
+                    <input type="range" min="1" max="5" value={rating} onChange={e => setRating(Number(e.target.value))} className="w-full cursor-pointer"/>
                     <span className="text-white font-bold">{rating}/5</span>
                 </div>
                 <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Share your thoughts on the course and professor..." rows={4} className="w-full bg-gray-700 p-2 rounded-md resize-none" />
                 {error && <p className="text-sm text-red-500">{error}</p>}
-                <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-medium">Submit Review</button>
+                <button type="submit" className="px-4 py-2 bg-gray-700 hover:bg-gray-900 cursor-pointer rounded-md text-white font-medium">Submit Review</button>
             </form>
         </div>
 
       <h2 className="text-xl font-bold mb-4 text-white">Professor and Course Reviews</h2>
       <div className="space-y-4">
         {reviews.map((review) => (
-          <div key={review._id} className="block p-4 shadow-lg rounded-lg bg-gray-800">
+          <div key={review._id} className="block p-4 shadow-lg rounded-lg hover:scale-101 transition duration-200 ease-linear">
             <div className="flex justify-between items-start">
                 <div>
                     <h3 className="font-semibold text-white">{review.professor}</h3>

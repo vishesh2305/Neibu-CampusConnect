@@ -39,13 +39,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     if (!session?.user?.id) return;
 
+    const fetchNotificationCount = async () => {
+        try {
+            const res = await fetch('/api/notifications/count');
+            if(res.ok) {
+                const data = await res.json();
+                setNotificationCount(data.count);
+            }
+        } catch (error) {
+            console.error("Failed to fetch notification count", error);
+        }
+    };
+    fetchNotificationCount();
+
     socket = io("http://localhost:3001");
     setSocket(socket);
     socket.emit("register-user", session.user.id);
 
     socket.on("receive-notification", (notification) => {
       toast.success(`New notification: ${notification.type}`);
-      setNotificationCount(notificationCount + 1);
+      setNotificationCount((prevCount) => prevCount + 1);
     });
 
     return () => {
@@ -133,7 +146,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="relative">
           <IconBell className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
           {notificationCount > 0 && (
-            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+              {notificationCount}
+            </span>
           )}
         </div>
       ),

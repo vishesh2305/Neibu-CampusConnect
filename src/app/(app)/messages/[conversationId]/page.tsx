@@ -49,8 +49,8 @@ export default async function ConversationPage({ params }: { params: Promise<{ c
     if (!partner) return notFound();
 
     return (
-        <div className="flex flex-col h-full">
-            <header className="flex items-center gap-4 p-3 border-b border-gray-800 bg-gray-950">
+        <div className="flex flex-col h-full mx-10">
+            <header className="flex items-center gap-4 p-3">
                 <Image
                     src={partner.image || '/default-avatar.png'}
                     alt={partner.name}
@@ -58,9 +58,9 @@ export default async function ConversationPage({ params }: { params: Promise<{ c
                     height={40}
                     className="w-10 h-10 rounded-full object-cover"
                 />
-                <h2 className="font-semibold text-lg text-white">{partner.name}</h2>
+                <h2 className="font-semibold text-lg text-white ">{partner.name}</h2>
             </header>
-            <div className="flex-1">
+            <div className="flex-1 ">
                 <ChatWindow conversationId={conversationId} />
             </div>
         </div>

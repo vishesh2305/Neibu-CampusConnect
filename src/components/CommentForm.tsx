@@ -44,12 +44,12 @@ export default function CommentForm({ postId }: CommentFormProps) {
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         placeholder="Add a comment..."
-        className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white sm:text-sm"
+        className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none text-white sm:text-sm"
       />
       <button
         type="submit"
         disabled={loading}
-        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50"
+        className="px-4 py-2 bg-gray-700 hover:bg-gray-900 cursor-pointer rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50"
       >
         Post
       </button>

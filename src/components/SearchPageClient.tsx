@@ -20,7 +20,7 @@ export default function SearchPageClient() {
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-4 mb-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+    <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-4 mb-8 p-4 rounded-lg">
       <div className="relative flex-grow w-full">
         <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
@@ -28,20 +28,20 @@ export default function SearchPageClient() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for anything..."
-          className="w-full bg-gray-700 border border-transparent rounded-md pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-gray-700 border border-transparent rounded-md pl-10 pr-4 py-2 focus:outline-none "
         />
       </div>
       <select
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        className="w-full sm:w-auto bg-gray-700 border border-transparent rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full sm:w-auto bg-gray-700 hover:cursor-pointer border border-transparent rounded-md px-3 py-2 focus:outline-none "
       >
         <option value="all">All</option>
         <option value="users">Users</option>
         <option value="posts">Posts</option>
         <option value="groups">Groups</option>
       </select>
-      <button type="submit" className="w-full sm:w-auto px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors">
+      <button type="submit" className="w-full sm:w-auto px-6 py-2 bg-gray-700 hover:bg-gray-900 hover:cursor-pointer rounded-md font-semibold transition-colors">
         Search
       </button>
     </form>

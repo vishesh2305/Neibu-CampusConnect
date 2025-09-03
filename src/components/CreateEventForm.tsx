@@ -50,14 +50,14 @@ export default function CreateEventForm() {
     <div className=" p-6 rounded-lg shadow-lg">
       <h2 className="text-xl font-bold mb-4 text-white">Create a New Event</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input type="text" name="title" placeholder="Event Title" value={formData.title} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md" required />
-        <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md resize-none" rows={3} required />
-        <input type="date" name="date" value={formData.date} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md" required />
-        <input type="time" name="time" value={formData.time} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md" required />
-        <input type="text" name="location" placeholder="Location (e.g., Library Room 204)" value={formData.location} onChange={handleChange} className="w-full bg-gray-700 p-2 rounded-md" required />
+        <input type="text" name="title" placeholder="Event Title" value={formData.title} onChange={handleChange} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required />
+        <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" rows={3} required />
+        <input type="date" name="date" value={formData.date} onChange={handleChange} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required />
+        <input type="time" name="time" value={formData.time} onChange={handleChange} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required />
+        <input type="text" name="location" placeholder="Location (e.g., Library Room 204)" value={formData.location} onChange={handleChange} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required />
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <div className="flex justify-end">
-          <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-medium">
+          <button type="submit" disabled={loading} className="px-4 py-2  bg-gray-700 hover:bg-gray-900 hover:cursor-pointer rounded-md text-white font-medium">
             {loading ? 'Creating...' : 'Create Event'}
           </button>
         </div>

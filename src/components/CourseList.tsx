@@ -62,14 +62,14 @@ export default function CourseList() {
 
 
  return (
-    <div className="mt-8">
+    <div className="mt-8 ">
       <h2 className="text-xl font-bold mb-4 text-white">Available Courses</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
         {courses.map((course) => (
           <Link
             href={`/academic/courses/${course._id}`}
             key={course._id}
-            className="p-4 shadow-lg rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors flex flex-col justify-between"
+            className="p-4 shadow-md rounded-lg flex flex-col justify-between"
           >
             <div>
               <h3 className="font-semibold text-white">{course.name}</h3>
@@ -80,7 +80,7 @@ export default function CourseList() {
             <button
               onClick={(e) => handleEnroll(e, course._id)}
               disabled={enrolling === course._id}
-              className="mt-4 w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-medium text-sm disabled:opacity-50"
+              className="mt-4 w-full px-4 py-2 bg-gray-700 hover:bg-gray-900 hover:cursor-pointer rounded-md text-white font-medium text-sm disabled:opacity-50"
             >
               {enrolling === course._id ? 'Enrolling...' : 'Enroll'}
             </button>

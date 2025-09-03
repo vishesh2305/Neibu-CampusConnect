@@ -33,6 +33,7 @@ export default function DeleteAccountZone() {
         setError(data.message || 'Failed to delete account.');
       }
     } catch (err) {
+      console.log(err);
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);

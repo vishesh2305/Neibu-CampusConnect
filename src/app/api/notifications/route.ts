@@ -1,3 +1,6 @@
+// src/app/api/notifications/route.ts
+
+// ... (GET function remains the same)
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -31,23 +34,22 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+// This should be a PUT or PATCH, but we'll use POST to match the existing file structure
+export async function POST() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json(
-        { message: "User ID is required" },
-        { status: 400 }
-      );
-    }
-
     const client = await clientPromise;
     const db = client.db();
+    
+    // The user ID comes from the authenticated session, not query params
+    const userId = new ObjectId(session.user.id);
 
     await db.collection("notifications").updateMany(
-      { userId: new ObjectId(userId), read: false },
+      { userId: userId, read: false },
       { $set: { read: true } }
     );
 

@@ -1,10 +1,48 @@
+// src/app/api/messages/[conversationId]/route.ts
+
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../../lib/authOptions';
 import clientPromise from '../../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
-// GET handler
+
+interface Message {
+  _id?: ObjectId;
+  conversationId: ObjectId;
+  senderId: ObjectId;
+  text: string;
+  createdAt: Date;
+}
+
+interface Notification {
+  _id?: ObjectId;
+  userId: ObjectId;
+  actorId: ObjectId;
+  type: 'message';
+  message: string;
+  link: string;
+  read: boolean;
+  createdAt: Date;
+}
+
+
+async function dispatchNotification(notification: Notification) {
+  try {
+    await fetch('http://localhost:3001/api/dispatch-notification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipientId: notification.userId.toString(),
+        notification,
+      }),
+    });
+  } catch (error) {
+    console.error('Failed to dispatch message notification', error);
+  }
+}
+
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ conversationId: string }> }
@@ -16,7 +54,10 @@ export async function GET(
 
   const { conversationId } = await params;
   if (!ObjectId.isValid(conversationId)) {
-    return NextResponse.json({ message: 'Invalid Conversation ID' }, { status: 400 });
+    return NextResponse.json(
+      { message: 'Invalid Conversation ID' },
+      { status: 400 }
+    );
   }
 
   try {
@@ -29,10 +70,14 @@ export async function GET(
     });
 
     if (!conversation) {
-      return NextResponse.json({ message: 'Conversation not found or access denied' }, { status: 404 });
+      return NextResponse.json(
+        { message: 'Conversation not found or access denied' },
+        { status: 404 }
+      );
     }
 
-    const messages = await db.collection('messages')
+    const messages = await db
+      .collection<Message>('messages')
       .find({ conversationId: new ObjectId(conversationId) })
       .sort({ createdAt: 1 })
       .toArray();
@@ -40,11 +85,13 @@ export async function GET(
     return NextResponse.json(messages);
   } catch (error) {
     console.error('GET_MESSAGES_ERROR', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { message: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
-// POST handler
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ conversationId: string }> }
@@ -56,13 +103,19 @@ export async function POST(
 
   const { conversationId } = await params;
   if (!ObjectId.isValid(conversationId)) {
-    return NextResponse.json({ message: 'Invalid Conversation ID' }, { status: 400 });
+    return NextResponse.json(
+      { message: 'Invalid Conversation ID' },
+      { status: 400 }
+    );
   }
 
   try {
     const { text } = await req.json();
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
-      return NextResponse.json({ message: 'Message text is required.' }, { status: 400 });
+      return NextResponse.json(
+        { message: 'Message text is required.' },
+        { status: 400 }
+      );
     }
 
     const client = await clientPromise;
@@ -76,28 +129,63 @@ export async function POST(
     });
 
     if (!conversation) {
-      return NextResponse.json({ message: 'Conversation not found or access denied' }, { status: 404 });
+      return NextResponse.json(
+        { message: 'Conversation not found or access denied' },
+        { status: 404 }
+      );
     }
 
-    const newMessage = {
+    const newMessage: Message = {
       conversationId: conversationObjectId,
       senderId: currentUserId,
       text: text.trim(),
       createdAt: new Date(),
     };
 
-    const result = await db.collection('messages').insertOne(newMessage);
+    const result = await db.collection<Message>('messages').insertOne(newMessage);
+    const insertedMessage = await db
+      .collection<Message>('messages')
+      .findOne({ _id: result.insertedId });
 
     await db.collection('conversations').updateOne(
       { _id: conversationObjectId },
       { $set: { lastMessageAt: new Date() } }
     );
 
-    const insertedMessage = await db.collection('messages').findOne({ _id: result.insertedId });
+    const recipientId = conversation.participants.find(
+      (p: ObjectId) => !p.equals(currentUserId)
+    );
+
+    if (recipientId) {
+      const notification: Notification = {
+        userId: recipientId,
+        actorId: currentUserId,
+        type: 'message',
+        message: `You have a new message from ${session.user.name}`,
+        link: `/messages/${conversationId}`,
+        read: false,
+        createdAt: new Date(),
+      };
+
+      const notifyResult = await db
+        .collection<Notification>('notifications')
+        .insertOne(notification);
+
+      const fullNotification = await db
+        .collection<Notification>('notifications')
+        .findOne({ _id: notifyResult.insertedId });
+
+      if (fullNotification) {
+        await dispatchNotification(fullNotification);
+      }
+    }
 
     return NextResponse.json(insertedMessage, { status: 201 });
   } catch (error) {
     console.error('SEND_MESSAGE_ERROR', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { message: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

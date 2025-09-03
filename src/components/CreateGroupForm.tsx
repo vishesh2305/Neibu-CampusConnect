@@ -30,7 +30,7 @@ export default function CreateGroupForm() {
       });
 
       if (res.ok) {
-        router.refresh(); // Refresh the page to show the new group
+        router.refresh(); 
         setName('');
         setDescription('');
       } else {
@@ -59,7 +59,7 @@ export default function CreateGroupForm() {
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <div className="flex justify-end">
-                <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-medium disabled:opacity-50">
+                <button type="submit" disabled={loading} className="px-4 py-2 bg-gray-700 hover:bg-gray-900 hover:cursor-pointer rounded-md text-white font-medium disabled:opacity-50">
                     {loading ? 'Creating...' : 'Create Group'}
                 </button>
             </div>

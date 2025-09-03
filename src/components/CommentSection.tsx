@@ -15,16 +15,24 @@ export default function CommentSection({ postId }: { postId: string }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch comments on the client side when the component mounts
   useEffect(() => {
     const fetchComments = async () => {
       try {
         setIsLoading(true);
         const res = await fetch(`/api/posts/${postId}/comment`);
         const data = await res.json();
-        setComments(data);
+        console.log("API response:", data); // Debug the response
+        if (!res.ok) {
+          console.error("API error:", data.message);
+          setComments([]); // Set to empty array on error
+          return;
+        }
+        // Ensure data is an array
+        const commentsArray = Array.isArray(data) ? data : [];
+        setComments(commentsArray);
       } catch (error) {
         console.error("Failed to fetch comments:", error);
+        setComments([]); // Fallback to empty array on error
       } finally {
         setIsLoading(false);
       }
@@ -35,9 +43,7 @@ export default function CommentSection({ postId }: { postId: string }) {
 
   return (
     <div className="mt-4">
-      {/* The CommentForm is also a client component, so this is fine */}
       <CommentForm postId={postId} />
-
       <div className="mt-4 space-y-3">
         {isLoading ? (
           <p className="text-gray-400 text-sm">Loading comments...</p>

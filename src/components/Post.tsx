@@ -119,7 +119,7 @@ export default function Post({
         <LikeButton postId={post._id} initialLikes={post.likesCount || 0} isLiked={post.isLiked || false} />
         <button
           onClick={() => setShowComments(!showComments)}
-          className="flex items-center space-x-2 text-gray-400 hover:text-blue-500 transition-colors"
+          className="flex items-center space-x-2 text-gray-400 hover:text-white hover:cursor-pointer transition-colors"
         >
           <ChatBubbleOvalLeftEllipsisIcon className="h-6 w-6" />
           <span className="text-sm font-medium">{post.commentsCount || 0}</span>

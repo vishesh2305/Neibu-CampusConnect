@@ -1,3 +1,5 @@
+// src/app/api/posts/[postId]/comment/route.ts
+
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../../../../lib/authOptions";
@@ -16,8 +18,12 @@ interface NotificationDoc {
 }
 
 const commentSchema = z.object({
-  test: z.string().min(1, {message: "Comment text is required."}).max(1000, {message: "Comment cannnot exceed 1000 characters."}).trim(),
+  text: z.string()
+    .min(1, { message: "Comment text is required." })
+    .max(1000, { message: "Comment cannot exceed 1000 characters." })
+    .trim(),
 });
+
 
 async function dispatchNotification(notification: NotificationDoc) {
   try {
@@ -89,7 +95,7 @@ export async function POST(
       );
     }
 
-    const text = parsed.data;
+    const { text } = parsed.data;
 
 
     const client = await clientPromise;
@@ -97,13 +103,16 @@ export async function POST(
     const postObjectId = new ObjectId(postId);
     const userId = new ObjectId(session.user.id);
 
-    const newComment = {
-      postId: postObjectId,
-      authorId: userId,
-      authorName: session.user.name,
-      text,
-      createdAt: new Date(),
-    };
+const newComment = {
+  postId: postObjectId,
+  authorId: userId,
+  authorName: session.user.name,
+  text,
+  createdAt: new Date(),
+};
+
+
+
 
     await db.collection("comments").insertOne(newComment);
 
@@ -136,15 +145,13 @@ export async function POST(
 
     return NextResponse.json({ message: "Comment added" }, { status: 201 });
   } catch (error) {
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ message: error.issues[0].message }, { status: 400 });
-    }
-
     console.error("COMMENT_POST_ERROR", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
     );
+
   }
+
+
 }

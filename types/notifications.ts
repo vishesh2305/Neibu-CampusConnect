@@ -1,10 +1,16 @@
+export type NotificationType = "like" | "comment" | "follow" | "message";
+
 export interface Notification {
   _id: string;
-  type: "like" | "comment";
+  type: NotificationType;
   read: boolean;
   createdAt: string;
-  postId: string;
-  actorId: { name: string; image: string };
+  postId?: string; // only relevant for like/comment
+  actorId: {
+    _id: string;
+    name: string;
+    image?: string;
+  };
   message?: string;
   link?: string;
 }

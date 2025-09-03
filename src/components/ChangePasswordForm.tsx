@@ -46,6 +46,7 @@ export default function ChangePasswordForm() {
         setError(data.message || 'Failed to update password.');
       }
     } catch (err) {
+      console.log(err);
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);

@@ -9,7 +9,7 @@ import ProfessorReview from '../../../components/ProfessorReview';
 
 export default function AcademicPage() {
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto ">
       <h1 className="text-3xl font-bold text-white mb-6">Academic</h1>
       <Tabs>
         <TabList>

@@ -58,9 +58,9 @@ export default async function EventList() {
   return (
     <div>
       <h2 className="text-xl font-bold mb-4 text-white">Upcoming Events</h2>
-      <div className="space-y-4">
+      <div className="space-y-4 ">
         {events.map((event) => (
-          <div key={event._id} className="p-4 shadow-lg rounded-lg">
+          <div key={event._id} className="p-4 shadow-lg rounded-lg hover:cursor-pointer hover:scale-101 transition duration-200 linear">
             <div className="flex justify-between items-start">
                 <div>
                     <h3 className="font-semibold text-white text-lg">{event.title}</h3>

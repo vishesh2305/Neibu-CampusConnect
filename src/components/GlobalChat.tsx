@@ -72,8 +72,8 @@ export default function GlobalChat() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-800 rounded-lg">
-      <div className="flex-1 p-4 overflow-y-auto">
+    <div className="flex flex-col h-full shadow-md rounded-lg">
+      <div className="flex-1 p-4 overflow-y-auto ">
         {loading ? <p>Loading messages...</p> : messages.map(msg => (
           <div key={msg._id} className="flex my-2">
             <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-2xl bg-gray-700 text-gray-200">
@@ -91,9 +91,9 @@ export default function GlobalChat() {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type an anonymous message..."
-            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-full focus:outline-none"
           />
-          <button type="submit" className="p-2 bg-blue-600 rounded-full text-white hover:bg-blue-700">
+          <button type="submit" className="p-2 bg-gray-700 rounded-full text-white hover:bg-gray-900 cursor-pointer">
             <PaperAirplaneIcon className="h-5 w-5"/>
           </button>
         </form>

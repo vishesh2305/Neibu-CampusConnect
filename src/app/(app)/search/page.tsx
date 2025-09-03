@@ -59,7 +59,7 @@ const ResultItem = ({ result }: { result: SearchResult }) => {
   return (
     <Link
       href={getLink() || '#'}
-      className="block p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+      className="block p-4 rounded-lg shadow-sm hover:scale-101 transition duration-200 ease-linear"
     >
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">{getIcon()}</div>
@@ -85,16 +85,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-white mb-6">Search</h1>
-
-      {/* Search bar / filter UI */}
       <SearchPageClient />
 
       {query && (
         <div>
-          <h2 className="text-xl font-semibold text-white mb-4">
-            Results for <span className="text-blue-500">&quot;{query}&quot;</span>
-          </h2>
           <div className="space-y-4">
             {results.length > 0 ? (
               results.map((result) => (
