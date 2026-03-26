@@ -6,7 +6,6 @@ import { ObjectId } from 'mongodb';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/authOptions';
 import ChatWindow from '../../../../components/ChatWindow';
-import Image from 'next/image';
 
 interface Participant {
     _id: string;
@@ -49,20 +48,13 @@ export default async function ConversationPage({ params }: { params: Promise<{ c
     if (!partner) return notFound();
 
     return (
-        <div className="flex flex-col h-full mx-10">
-            <header className="flex items-center gap-4 p-3">
-                <Image
-                    src={partner.image || '/default-avatar.png'}
-                    alt={partner.name}
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 rounded-full object-cover"
-                />
-                <h2 className="font-semibold text-lg text-white ">{partner.name}</h2>
-            </header>
-            <div className="flex-1 ">
-                <ChatWindow conversationId={conversationId} />
-            </div>
+        <div className="flex flex-col h-[calc(100vh-120px)]">
+            <ChatWindow
+                conversationId={conversationId}
+                recipientId={partner._id}
+                recipientName={partner.name}
+                recipientImage={partner.image}
+            />
         </div>
     );
 }

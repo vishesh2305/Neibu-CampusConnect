@@ -19,25 +19,25 @@ export default function LoginPage() {
     const testimonials = [
     {
       quote: "This platform is amazing! It's so easy to use and has helped me a lot.",
-      name: "Vishesh",
+      name: "Developer",
       designation: "Developer",
       src: "/images/anime-boy-dark.png",
     },
     {
       quote: "I love the user interface. It's clean, modern, and intuitive.",
-      name: "Vishesh",
+      name: "Developer",
       designation: "Designer",
       src: "/images/young_man_anime.png",
     },
     {
       quote: "I love the user interface. It's clean, modern, and intuitive.",
-      name: "Vishesh",
+      name: "Developer",
       designation: "Engineer",
       src: "/images/head_covered_man.png",
     },
     {
       quote: "I love the user interface. It's clean, modern, and intuitive.",
-      name: "Vishesh",
+      name: "Developer",
       designation: "Bug Hunter",
       src: "/images/anime_girl.png",
     },
@@ -70,7 +70,7 @@ export default function LoginPage() {
   };
 
 return (
-    <div className=" flex items-center justify-evenly min-h-screen ">
+    <div className=" flex items-center justify-evenly min-h-screen bg-black">
       <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
         <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
           Welcome back to CampusConnect

@@ -18,7 +18,7 @@ interface NotificationDoc {
 // Helper to dispatch notification
 async function dispatchNotification(notification: NotificationDoc) {
   try {
-    await fetch("http://localhost:3001/api/dispatch-notification", {
+    await fetch(`${process.env.SOCKET_SERVER_URL || 'http://localhost:3001'}/api/dispatch-notification`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

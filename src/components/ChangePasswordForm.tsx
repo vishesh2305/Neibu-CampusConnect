@@ -53,43 +53,21 @@ export default function ChangePasswordForm() {
     }
   };
 
+  const inputClass = "w-full bg-[#12121a] border border-[#2e2e3e] text-white placeholder-gray-500 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-colors";
+
   return (
-    <div className="mt-8 border-t border-gray-700 pt-6">
+    <div className="mt-8 border-t border-[#2e2e3e] pt-6">
       <h2 className="text-xl font-semibold mb-4 text-white">Change Password</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="password"
-          name="currentPassword"
-          placeholder="Current Password"
-          value={formData.currentPassword}
-          onChange={handleChange}
-          className="w-full bg-gray-700 p-2 rounded-md"
-          required
-        />
-        <input
-          type="password"
-          name="newPassword"
-          placeholder="New Password"
-          value={formData.newPassword}
-          onChange={handleChange}
-          className="w-full bg-gray-700 p-2 rounded-md"
-          required
-        />
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm New Password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          className="w-full bg-gray-700 p-2 rounded-md"
-          required
-        />
+        <input type="password" name="currentPassword" placeholder="Current Password" value={formData.currentPassword} onChange={handleChange} className={inputClass} required />
+        <input type="password" name="newPassword" placeholder="New Password" value={formData.newPassword} onChange={handleChange} className={inputClass} required />
+        <input type="password" name="confirmPassword" placeholder="Confirm New Password" value={formData.confirmPassword} onChange={handleChange} className={inputClass} required />
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        {success && <p className="text-green-500 text-sm">{success}</p>}
+        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {success && <p className="text-emerald-400 text-sm">{success}</p>}
 
         <div className="flex justify-end">
-          <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-medium">
+          <button type="submit" disabled={loading} className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white font-semibold transition-colors disabled:opacity-50">
             {loading ? 'Updating...' : 'Update Password'}
           </button>
         </div>

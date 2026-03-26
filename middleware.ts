@@ -18,5 +18,8 @@ export const config = {
     "/admin/:path*",
     "/global-chat/:path*",
     "/post/:path*",
+    "/nearby/:path*",
+    "/marketplace/:path*",
+    "/lost-found/:path*",
     ],
 };

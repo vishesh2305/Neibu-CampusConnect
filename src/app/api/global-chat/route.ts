@@ -7,6 +7,11 @@ import clientPromise from '../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const client = await clientPromise;
     const db = client.db();

@@ -65,16 +65,12 @@ export default function EditProfilePage() {
 
     let newImageUrl = formData.image;
 
-
     if (inputFileRef.current?.files && inputFileRef.current.files[0]) {
       const file = inputFileRef.current.files[0];
       try {
         const response = await fetch(
           `/api/avatar/upload?filename=${file.name}`,
-          {
-            method: 'POST',
-            body: file,
-          },
+          { method: 'POST', body: file }
         );
         const newBlob = (await response.json()) as PutBlobResult;
         newImageUrl = newBlob.url;
@@ -120,13 +116,15 @@ export default function EditProfilePage() {
   };
 
   if (status === "loading") {
-    return <p>Loading...</p>;
+    return <p className="text-gray-400">Loading...</p>;
   }
+
+  const inputClass = "mt-1 block w-full bg-[#12121a] border border-[#2e2e3e] text-white placeholder-gray-500 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-colors sm:text-sm";
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Edit Your Profile</h1>
-      <form onSubmit={handleSubmit} className="space-y-6  p-8 rounded-lg">
+      <h1 className="text-3xl font-bold mb-6 text-white">Edit Your Profile</h1>
+      <form onSubmit={handleSubmit} className="space-y-6 p-8 bg-[#1e1e2e] border border-[#2e2e3e] rounded-xl">
 
         <div>
           <label className="block text-sm font-medium text-gray-300">Profile Picture</label>
@@ -134,34 +132,34 @@ export default function EditProfilePage() {
             {formData.image ? (
               <Image src={formData.image} height={10} width={10} alt="Current avatar" className="h-20 w-20 rounded-full object-cover" />
             ) : (
-              <div className="h-20 w-20 rounded-full bg-gray-600 flex items-center justify-center text-gray-400">
+              <div className="h-20 w-20 rounded-full bg-[#2e2e3e] flex items-center justify-center text-gray-400">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
               </div>
             )}
-            <input type="file" name="avatar" ref={inputFileRef} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700" />
+            <input type="file" name="avatar" ref={inputFileRef} className="text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 file:cursor-pointer" />
           </div>
         </div>
 
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-300">Full Name</label>
-          <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2" />
+          <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} className={inputClass} />
         </div>
         <div>
           <label htmlFor="major" className="block text-sm font-medium text-gray-300">Major</label>
-          <input type="text" name="major" id="major" placeholder="e.g., Computer Science" value={formData.major} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2" />
+          <input type="text" name="major" id="major" placeholder="e.g., Computer Science" value={formData.major} onChange={handleChange} className={inputClass} />
         </div>
         <div>
           <label htmlFor="year" className="block text-sm font-medium text-gray-300">Graduation Year</label>
-          <input type="number" name="year" id="year" placeholder="e.g., 2025" value={formData.year || ""} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2" />
+          <input type="number" name="year" id="year" placeholder="e.g., 2025" value={formData.year || ""} onChange={handleChange} className={inputClass} />
         </div>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        {success && <p className="text-green-500 text-sm">{success}</p>}
+        {error && <p className="text-rose-400 text-sm">{error}</p>}
+        {success && <p className="text-emerald-400 text-sm">{success}</p>}
 
         <div className="flex justify-end">
-          <button type="submit" disabled={loading} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-md font-medium text-white transition-colors disabled:opacity-50">
+          <button type="submit" disabled={loading} className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-semibold text-white transition-colors disabled:opacity-50">
             {loading ? "Saving..." : "Save Changes"}
           </button>
         </div>

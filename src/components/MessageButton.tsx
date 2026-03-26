@@ -57,7 +57,7 @@ export default function MessageButton({ targetUserId }: MessageButtonProps) {
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`flex items-center gap-2 px-4 py-2 rounded-md font-semibold text-white text-sm transition-colors disabled:opacity-50 bg-green-600 hover:bg-green-700`}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white text-sm transition-colors disabled:opacity-50 bg-violet-600 hover:bg-violet-500`}
     >
       <ChatBubbleLeftRightIcon className="h-5 w-5" />
       <span>{loading ? 'Starting...' : 'Message'}</span>

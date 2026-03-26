@@ -6,15 +6,13 @@ import { useState, useEffect } from 'react';
 
 interface Review {
   _id: string;
-  courseId: string; // We'll need this for the form
+  courseId: string;
   professor: string;
   rating: number;
   comment: string;
-  // Let's also fetch course name for better display
   courseName?: string;
 }
 
-// Assume we have a course type for the dropdown
 interface Course {
   _id: string;
   name: string;
@@ -26,12 +24,10 @@ export default function ProfessorReview() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Form state
   const [selectedCourse, setSelectedCourse] = useState('');
   const [rating, setRating] = useState(3);
   const [comment, setComment] = useState('');
   const [error, setError] = useState('');
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,12 +39,10 @@ export default function ProfessorReview() {
         const reviewsData = await reviewsRes.json();
         const coursesData = await coursesRes.json();
 
-        // Map course names to reviews
         const populatedReviews = reviewsData.map((review: Review) => ({
             ...review,
             courseName: coursesData.find((c: Course) => c._id === review.courseId)?.name || 'Unknown Course'
         }));
-
 
         setReviews(populatedReviews);
         setCourses(coursesData);
@@ -85,10 +79,8 @@ export default function ProfessorReview() {
           });
           if (res.ok) {
               alert('Review submitted!');
-              // Refresh reviews
               const updatedReviews = await (await fetch('/api/reviews')).json();
               setReviews(updatedReviews);
-              // Reset form
               setSelectedCourse('');
               setRating(3);
               setComment('');
@@ -102,44 +94,43 @@ export default function ProfessorReview() {
       }
   };
 
-
   if (loading) {
-    return <p>Loading reviews...</p>;
+    return <p className="text-gray-400">Loading reviews...</p>;
   }
 
   return (
     <div className="mt-8">
         {/* Review Submission Form */}
-        <div className="mb-8 p-6 shadow-md rounded-lg">
+        <div className="mb-8 p-6 bg-[#1e1e2e] border border-[#2e2e3e] rounded-xl">
             <h2 className="text-xl font-bold mb-4 text-white">Write a Review</h2>
-            <form onSubmit={handleSubmit} className="space-y-4 p-2">
-                <select value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} className="w-9/10 cursor-pointer bg-gray-700 p-2 rounded-md">
-                    <option value="" className='p-2'>Select a Course to Review</option>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <select value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} className="w-full cursor-pointer bg-[#12121a] border border-[#2e2e3e] text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50">
+                    <option value="">Select a Course to Review</option>
                     {courses.map(course => (
                         <option key={course._id} value={course._id}>{course.name} - {course.professor}</option>
                     ))}
                 </select>
-                <div className="flex items-center gap-2">
-                    <label className="text-white">Rating:</label>
-                    <input type="range" min="1" max="5" value={rating} onChange={e => setRating(Number(e.target.value))} className="w-full cursor-pointer"/>
-                    <span className="text-white font-bold">{rating}/5</span>
+                <div className="flex items-center gap-3">
+                    <label className="text-gray-300 text-sm">Rating:</label>
+                    <input type="range" min="1" max="5" value={rating} onChange={e => setRating(Number(e.target.value))} className="flex-1 cursor-pointer accent-amber-500"/>
+                    <span className="text-amber-400 font-bold text-lg">{rating}/5</span>
                 </div>
-                <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Share your thoughts on the course and professor..." rows={4} className="w-full bg-gray-700 p-2 rounded-md resize-none" />
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                <button type="submit" className="px-4 py-2 bg-gray-700 hover:bg-gray-900 cursor-pointer rounded-md text-white font-medium">Submit Review</button>
+                <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Share your thoughts on the course and professor..." rows={4} className="w-full bg-[#12121a] border border-[#2e2e3e] text-white placeholder-gray-500 p-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/50" />
+                {error && <p className="text-sm text-red-400">{error}</p>}
+                <button type="submit" className="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 cursor-pointer rounded-lg text-white font-semibold transition-colors">Submit Review</button>
             </form>
         </div>
 
       <h2 className="text-xl font-bold mb-4 text-white">Professor and Course Reviews</h2>
       <div className="space-y-4">
         {reviews.map((review) => (
-          <div key={review._id} className="block p-4 shadow-lg rounded-lg hover:scale-101 transition duration-200 ease-linear">
+          <div key={review._id} className="p-5 bg-[#1e1e2e] border border-[#2e2e3e] rounded-xl hover:border-[#3e3e4e] transition-colors">
             <div className="flex justify-between items-start">
                 <div>
                     <h3 className="font-semibold text-white">{review.professor}</h3>
-                    <p className="text-xs text-gray-500">{review.courseName}</p>
+                    <p className="text-xs text-gray-400">{review.courseName}</p>
                 </div>
-                <div className="text-lg font-bold text-yellow-400">{review.rating}/5 ★</div>
+                <div className="text-lg font-bold text-amber-400">{review.rating}/5 ★</div>
             </div>
             <p className="text-sm text-gray-300 mt-2">{review.comment}</p>
           </div>

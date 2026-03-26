@@ -90,7 +90,7 @@ export default function CreatePost({ groupId }: { groupId?: string }) {
         />
 
         {showPollCreator && (
-          <div className="my-4 p-4 border border-gray-700 rounded-lg space-y-3">
+          <div className="my-4 p-4 border border-[#2e2e3e] rounded-lg space-y-3">
             {pollOptions.map((option, index) => (
               <div key={index} className="flex items-center gap-2">
                 <input
@@ -98,7 +98,7 @@ export default function CreatePost({ groupId }: { groupId?: string }) {
                   placeholder={`Option ${index + 1}`}
                   value={option}
                   onChange={(e) => handlePollOptionChange(index, e.target.value)}
-                  className="flex-grow bg-gray-700 border-gray-600 rounded-md p-2 focus:ring-blue-500"
+                  className="flex-grow bg-[#12121a] border-[#2e2e3e] rounded-md p-2 focus:ring-emerald-500/50"
                 />
                 {pollOptions.length > 2 && (
                   <button type="button" onClick={() => removePollOption(index)}>
@@ -108,7 +108,7 @@ export default function CreatePost({ groupId }: { groupId?: string }) {
               </div>
             ))}
             {pollOptions.length < 5 && (
-              <button type="button" onClick={addPollOption} className="flex items-center gap-2 text-blue-500">
+              <button type="button" onClick={addPollOption} className="flex items-center gap-2 text-emerald-400">
                 <PlusCircleIcon className="h-5 w-5" />
                 <span>Add Option</span>
               </button>
@@ -123,9 +123,9 @@ export default function CreatePost({ groupId }: { groupId?: string }) {
               type="button"
               onClick={() => setShowPollCreator(!showPollCreator)}
               title="Create a poll"
-              className="p-2 rounded-full hover:bg-gray-700"
+              className="p-2 rounded-full hover:bg-[#2e2e3e]"
             >
-              <Bars3BottomLeftIcon className={`h-6 w-6 ${showPollCreator ? 'text-blue-500' : 'text-gray-400'}`} />
+              <Bars3BottomLeftIcon className={`h-6 w-6 ${showPollCreator ? 'text-emerald-400' : 'text-gray-400'}`} />
             </button>
           </div>
 

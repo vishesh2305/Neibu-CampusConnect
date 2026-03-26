@@ -1,11 +1,12 @@
-import React from 'react'
+import ConversationList from "@/components/ConversationList";
+import UserSearch from "@/components/UserSearch";
 
-const page = () => {
+export default function MessagesPage() {
   return (
-    <div>
-      
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-4">Messages</h1>
+      <UserSearch />
+      <ConversationList />
     </div>
-  )
+  );
 }
-
-export default page

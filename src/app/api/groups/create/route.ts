@@ -6,6 +6,7 @@ import { authOptions } from '../../../../lib/authOptions';
 import clientPromise from '../../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
+import { rateLimitResponse } from "@/lib/rateLimit";
 
 const createGroupSchema = z.object({
   name: z.string().min(1, { message: 'Group name is required.' }).max(100, { message: 'Group name cannot exceed 100 characters.' }).trim(),
@@ -17,6 +18,9 @@ export async function POST(req: Request) {
   if (!session || !session.user) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
+
+  const rateLimited = rateLimitResponse(`group-create:${session.user.id}`, { windowMs: 60000, maxRequests: 5 });
+  if (rateLimited) return rateLimited;
 
   try {
     const body = await req.json();
@@ -51,7 +55,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(
-      { message: 'Group created successfully', groupId: newGroupId },
+      { ...newGroup, _id: newGroupId.toString(), creatorId: session.user.id },
       { status: 201 }
     );
   } catch (error) {

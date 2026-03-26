@@ -6,6 +6,7 @@ import { authOptions } from '../../../../lib/authOptions';
 import clientPromise from '../../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
+import { rateLimitResponse } from "@/lib/rateLimit";
 
 const createEventSchema = z.object({
   title: z
@@ -37,6 +38,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  const rateLimited = rateLimitResponse(`event-create:${session.user.id}`, { windowMs: 60000, maxRequests: 5 });
+  if (rateLimited) return rateLimited;
+
   try {
     const body = await req.json();
     const parsed = createEventSchema.safeParse(body);
@@ -66,7 +70,7 @@ export async function POST(req: Request) {
     const result = await db.collection('events').insertOne(newEvent);
 
     return NextResponse.json(
-      { message: 'Event created successfully', eventId: result.insertedId },
+      { ...newEvent, _id: result.insertedId.toString(), creatorId: session.user.id, rsvpCount: 0, hasRsvpd: false },
       { status: 201 }
     );
   } catch (error) {

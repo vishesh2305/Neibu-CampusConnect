@@ -17,40 +17,35 @@ export default function LikeButton({ postId, initialLikes, isLiked }: LikeButton
   const [likes, setLikes] = useState(initialLikes);
   const [liked, setLiked] = useState(isLiked);
   const [loading, setLoading] = useState(false);
+  const [showBurst, setShowBurst] = useState(false);
   const { data: session } = useSession();
 
-
   const handleLike = async () => {
-      if (!session) {
+    if (!session) {
       alert("Please login to like posts.");
       return;
     }
     if (loading) return;
     setLoading(true);
 
-    // --- The Fix: Using Functional State Updates ---
-    // We determine the action based on the current state before updating.
     const action = liked ? 'unlike' : 'like';
 
-    // Perform the optimistic UI update using the functional form of useState.
-    // This guarantees we are working with the latest state value.
     setLiked(prevLiked => !prevLiked);
     setLikes(prevLikes => action === 'like' ? prevLikes + 1 : prevLikes - 1);
-    // --- End Fix ---
+
+    // Trigger burst animation on like
+    if (action === 'like') {
+      setShowBurst(true);
+      setTimeout(() => setShowBurst(false), 600);
+    }
 
     try {
-      const res = await fetch(`/api/posts/${postId}/like`, {
-        method: 'POST',
-      });
-
+      const res = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
       if (!res.ok) {
-        // If the request fails, revert the state using the same atomic pattern.
         setLiked(prevLiked => !prevLiked);
         setLikes(prevLikes => action === 'like' ? prevLikes - 1 : prevLikes + 1);
-        console.error("Failed to update like status");
       }
     } catch (error) {
-      // Revert state on any other error.
       setLiked(prevLiked => !prevLiked);
       setLikes(prevLikes => action === 'like' ? prevLikes - 1 : prevLikes + 1);
       console.error("An error occurred:", error);
@@ -63,14 +58,34 @@ export default function LikeButton({ postId, initialLikes, isLiked }: LikeButton
     <button
       onClick={handleLike}
       disabled={loading}
-      className="flex items-center space-x-2 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+      className="relative flex items-center space-x-2 text-gray-500 hover:text-rose-500 transition-colors disabled:opacity-50"
+      aria-label={liked ? "Unlike post" : "Like post"}
     >
       {liked ? (
-        <HeartIcon className="h-6 w-6 text-red-500" />
+        <HeartIcon className={`h-6 w-6 text-rose-500 ${showBurst ? 'scale-125' : 'scale-100'} transition-transform duration-200`} />
       ) : (
         <HeartIconOutline className="h-6 w-6" />
       )}
       <span className="text-sm font-medium">{likes}</span>
+
+      {/* Burst particles */}
+      {showBurst && (
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(6)].map((_, i) => (
+            <span
+              key={i}
+              className="absolute left-1/2 top-1/2 text-rose-500 animate-like-burst text-xs"
+              style={{
+                // @ts-expect-error -- CSS custom properties for animation
+                "--tx": `${(Math.random() - 0.5) * 50}px`,
+                "--ty": `${-(Math.random() * 30 + 10)}px`,
+              }}
+            >
+              ♥
+            </span>
+          ))}
+        </div>
+      )}
     </button>
   );
 }

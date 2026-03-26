@@ -19,6 +19,11 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
+  const contentLength = parseInt(request.headers.get('content-length') || '0');
+  if (contentLength > 5 * 1024 * 1024) {
+    return NextResponse.json({ error: "File too large. Max 5MB." }, { status: 400 });
+  }
+
   const blob = await put(`avatars/${session.user.id}/${filename}`, request.body, {
     access: 'public',
     allowOverwrite: true,

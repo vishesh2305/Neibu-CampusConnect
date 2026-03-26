@@ -3,6 +3,10 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '../../../lib/mongodb';
 
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get('q');
@@ -15,7 +19,7 @@ export async function GET(req: Request) {
   try {
     const client = await clientPromise;
     const db = client.db();
-    const searchRegex = { $regex: query, $options: 'i' };
+    const searchRegex = { $regex: escapeRegex(query), $options: 'i' };
     const results = [];
 
     if (typeFilter === 'all' || typeFilter === 'users') {

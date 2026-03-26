@@ -51,8 +51,8 @@ export default function RsvpButton({ eventId, initialRsvpCount, hasRsvpd }: Rsvp
       disabled={loading}
       className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full transition-colors disabled:opacity-50 ${
         rsvpd
-          ? 'bg-green-600 text-white hover:bg-green-700'
-          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+          : 'bg-[#2e2e3e] text-gray-300 hover:bg-[#3e3e4e] border border-[#3e3e4e]'
       }`}
     >
       {rsvpd ? <CheckCircleIcon className="h-5 w-5" /> : <PlusCircleIcon className="h-5 w-5" />}

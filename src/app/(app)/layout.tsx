@@ -18,54 +18,87 @@ import {
   IconBell,
   IconWorld,
   IconBook,
+  IconRadar2,
+  IconShoppingBag,
+  IconZoomQuestion,
 } from "@tabler/icons-react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { io, Socket } from 'socket.io-client';
-import toast from 'react-hot-toast';
+import { io, Socket } from "socket.io-client";
+import toast from "react-hot-toast";
+import IncomingCallHandler from "@/components/IncomingCall";
+import Onboarding from "@/components/Onboarding";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
-let socket: Socket;
-
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { data: session } = useSession();
-  const {setSession, setSocket} = useUserStore();
+  const { setSession, setSocket } = useUserStore();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const socketRef = React.useRef<Socket | null>(null);
 
+  useKeyboardShortcuts();
+
+  // Sync session to store
   useEffect(() => {
-    if (session) {
-      setSession(session);
-    }
+    if (session) setSession(session);
+  }, [session, setSession]);
 
+  // Fetch initial notification count
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetch("/api/notifications/count")
+      .then((res) => res.json())
+      .then((data) => setNotificationCount(data.count))
+      .catch(() => {});
+  }, [session?.user?.id]);
+
+  // Socket connection — runs ONCE per user session, never reconnects on state changes
+  useEffect(() => {
     if (!session?.user?.id) return;
 
-    const fetchNotificationCount = async () => {
-        try {
-            const res = await fetch('/api/notifications/count');
-            if(res.ok) {
-                const data = await res.json();
-                setNotificationCount(data.count);
-            }
-        } catch (error) {
-            console.error("Failed to fetch notification count", error);
-        }
-    };
-    fetchNotificationCount();
+    // Don't reconnect if already connected for this user
+    if (socketRef.current?.connected) return;
 
-    socket = io("http://localhost:3001");
-    setSocket(socket);
-    socket.emit("register-user", session.user.id);
+    const newSocket = io(
+      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001",
+      {
+        transports: ["websocket", "polling"],
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+      }
+    );
 
-    socket.on("receive-notification", (notification) => {
-      toast.success(`New notification: ${notification.type}`);
-      setNotificationCount((prevCount) => prevCount + 1);
+    newSocket.on("connect", () => {
+      console.log("Socket connected:", newSocket.id);
+      newSocket.emit("register-user", session.user.id);
     });
 
+    newSocket.on("receive-notification", (notification) => {
+      toast.success(`New notification: ${notification.type}`);
+      setNotificationCount((prev) => prev + 1);
+    });
+
+    newSocket.on("reconnect", () => {
+      console.log("Socket reconnected");
+      newSocket.emit("register-user", session.user.id);
+    });
+
+    socketRef.current = newSocket;
+    setSocket(newSocket);
+
     return () => {
-      socket?.disconnect();
+      newSocket.disconnect();
+      socketRef.current = null;
       setSocket(null);
     };
-  }, [session, setSession, setSocket, notificationCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
   const navItems = [
     {
@@ -78,7 +111,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     {
       label: "Groups",
       href: "/groups",
-      icon: <IconUsers className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <IconUsers className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+      ),
     },
     {
       label: "Events",
@@ -90,22 +125,51 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     {
       label: "Messages",
       href: "/messages",
-      icon: <IconMessage className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <IconMessage className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+      ),
+    },
+    {
+      label: "Nearby",
+      href: "/nearby",
+      icon: (
+        <IconRadar2 className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+      ),
+    },
+    {
+      label: "Marketplace",
+      href: "/marketplace",
+      icon: (
+        <IconShoppingBag className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+      ),
+    },
+    {
+      label: "Lost & Found",
+      href: "/lost-found",
+      icon: (
+        <IconZoomQuestion className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+      ),
     },
     {
       label: "Search",
       href: "/search",
-      icon: <IconSearch className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <IconSearch className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+      ),
     },
     {
       label: "Global Chat",
       href: "/global-chat",
-      icon: <IconWorld className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <IconWorld className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+      ),
     },
     {
       label: "Academic",
       href: "/academic",
-      icon: <IconBook className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <IconBook className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+      ),
     },
   ];
 
@@ -113,35 +177,44 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     navItems.push({
       label: "Admin",
       href: "/admin",
-      icon: <IconSettings className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <IconSettings className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+      ),
     });
   }
 
   const dockItems = [
-    //... dockItems from your code
     {
       title: "Menu",
-      icon: <IconMenu2 className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <IconMenu2 className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
+      ),
       onClick: () => setSidebarOpen(!isSidebarOpen),
       href: "#",
     },
     {
       title: "Groups",
-      icon: <IconUsers className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <IconUsers className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
+      ),
       href: "/groups",
     },
     {
       title: "Messages",
-      icon: <IconMessage className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <IconMessage className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
+      ),
       href: "/messages",
     },
     {
-      title: "Search",
-      icon: <IconSearch className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />,
-      href: "/search",
+      title: "Nearby",
+      icon: (
+        <IconRadar2 className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
+      ),
+      href: "/nearby",
     },
     {
-      title:"Notifications",
+      title: "Notifications",
       icon: (
         <div className="relative">
           <IconBell className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
@@ -152,17 +225,37 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           )}
         </div>
       ),
-      href:"/notifications",
+      href: "/notifications",
+    },
+    {
+      title: "Marketplace",
+      icon: (
+        <IconShoppingBag className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
+      ),
+      href: "/marketplace",
+    },
+    {
+      title: "Search",
+      icon: (
+        <IconSearch className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
+      ),
+      href: "/search",
     },
     {
       title: "Global Chat",
-      icon: <IconWorld className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />,
+      icon: (
+        <IconWorld className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
+      ),
       href: "/global-chat",
     },
   ];
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
+      {/* Global overlays */}
+      <IncomingCallHandler />
+      <Onboarding />
+
       <Sidebar open={isSidebarOpen} setOpen={setSidebarOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col">
@@ -192,13 +285,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <IconLogout className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
                 ),
               }}
-              onClick={() => signOut({ callbackUrl: '/' })}
+              onClick={() => signOut({ callbackUrl: "/" })}
             />
           </div>
         </SidebarBody>
       </Sidebar>
 
-      <div style={{ backgroundColor: "#262626" }} className="flex-1 flex flex-col overflow-hidden">
+      <div
+        style={{ backgroundColor: "#16161e" }}
+        className="flex-1 flex flex-col overflow-hidden"
+      >
         <main className="flex-1 overflow-x-hidden overflow-y-auto ">
           <div className="container mx-auto px-6 py-8">{children}</div>
         </main>

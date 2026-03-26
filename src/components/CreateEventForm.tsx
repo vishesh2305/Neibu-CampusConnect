@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUserStore } from '@/store/userStore';
 
 export default function CreateEventForm() {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ export default function CreateEventForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { socket } = useUserStore();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,7 +34,9 @@ export default function CreateEventForm() {
       });
 
       if (res.ok) {
-        router.refresh(); // Refresh the page to show the new event
+        const newEvent = await res.json();
+        socket?.emit("send-new-event", newEvent);
+        router.refresh();
         setFormData({ title: '', description: '', date: '', time: '', location: '' });
       } else {
         const data = await res.json();
@@ -46,18 +50,22 @@ export default function CreateEventForm() {
     }
   };
 
+  const inputClass = "w-full bg-[#12121a] border border-[#2e2e3e] rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors";
+
   return (
-    <div className=" p-6 rounded-lg shadow-lg">
+    <div className="p-6 rounded-xl bg-[#1e1e2e] border border-[#2e2e3e]">
       <h2 className="text-xl font-bold mb-4 text-white">Create a New Event</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input type="text" name="title" placeholder="Event Title" value={formData.title} onChange={handleChange} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required />
-        <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" rows={3} required />
-        <input type="date" name="date" value={formData.date} onChange={handleChange} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required />
-        <input type="time" name="time" value={formData.time} onChange={handleChange} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required />
-        <input type="text" name="location" placeholder="Location (e.g., Library Room 204)" value={formData.location} onChange={handleChange} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        <input type="text" name="title" placeholder="Event Title" value={formData.title} onChange={handleChange} className={inputClass} required />
+        <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} className={`${inputClass} resize-none`} rows={3} required />
+        <div className="grid grid-cols-2 gap-3">
+          <input type="date" name="date" value={formData.date} onChange={handleChange} className={inputClass} required />
+          <input type="time" name="time" value={formData.time} onChange={handleChange} className={inputClass} required />
+        </div>
+        <input type="text" name="location" placeholder="Location (e.g., Library Room 204)" value={formData.location} onChange={handleChange} className={inputClass} required />
+        {error && <p className="text-red-400 text-sm">{error}</p>}
         <div className="flex justify-end">
-          <button type="submit" disabled={loading} className="px-4 py-2  bg-gray-700 hover:bg-gray-900 hover:cursor-pointer rounded-md text-white font-medium">
+          <button type="submit" disabled={loading} className="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 rounded-lg text-white font-semibold disabled:opacity-50 transition-colors">
             {loading ? 'Creating...' : 'Create Event'}
           </button>
         </div>

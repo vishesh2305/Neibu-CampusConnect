@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../../lib/authOptions';
 import clientPromise from '../../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { rateLimitResponse } from "@/lib/rateLimit";
 
 
 interface Message {
@@ -29,7 +30,7 @@ interface Notification {
 
 async function dispatchNotification(notification: Notification) {
   try {
-    await fetch('http://localhost:3001/api/dispatch-notification', {
+    await fetch(`${process.env.SOCKET_SERVER_URL || 'http://localhost:3001'}/api/dispatch-notification`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -101,6 +102,9 @@ export async function POST(
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  const rateLimited = rateLimitResponse(`message-send:${session.user.id}`, { windowMs: 60000, maxRequests: 30 });
+  if (rateLimited) return rateLimited;
+
   const { conversationId } = await params;
   if (!ObjectId.isValid(conversationId)) {
     return NextResponse.json(
@@ -143,9 +147,17 @@ export async function POST(
     };
 
     const result = await db.collection<Message>('messages').insertOne(newMessage);
-    const insertedMessage = await db
+    const insertedDoc = await db
       .collection<Message>('messages')
       .findOne({ _id: result.insertedId });
+
+    // Convert ObjectIds to strings for client consumption
+    const insertedMessage = insertedDoc ? {
+      ...insertedDoc,
+      _id: insertedDoc._id!.toString(),
+      conversationId: conversationId,
+      senderId: session.user.id,
+    } : null;
 
     await db.collection('conversations').updateOne(
       { _id: conversationObjectId },

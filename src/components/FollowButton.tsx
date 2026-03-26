@@ -58,10 +58,10 @@ export default function FollowButton({ targetUserId, isFollowing }: FollowButton
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`flex items-center gap-2 px-4 py-2 rounded-md font-semibold text-white text-sm transition-colors disabled:opacity-50 ${
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white text-sm transition-colors disabled:opacity-50 ${
         isFollowingState
-          ? 'bg-gray-600 hover:bg-gray-700'
-          : 'bg-blue-600 hover:bg-blue-700'
+          ? 'bg-[#2e2e3e] hover:bg-[#3e3e4e] border border-[#3e3e4e]'
+          : 'bg-emerald-600 hover:bg-emerald-500'
       }`}
     >
       {isFollowingState ? (

@@ -6,6 +6,7 @@ import { authOptions } from "../../../../lib/authOptions";
 import clientPromise from "../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
+import { rateLimitResponse } from "@/lib/rateLimit";
 
 const postSchema = z.object({
   content: z
@@ -38,6 +39,9 @@ export async function POST(req: Request) {
       { status: 401 }
     );
   }
+
+  const rateLimited = rateLimitResponse(`post-create:${session.user.id}`, { windowMs: 60000, maxRequests: 10 });
+  if (rateLimited) return rateLimited;
 
   try {
     const body = await req.json();

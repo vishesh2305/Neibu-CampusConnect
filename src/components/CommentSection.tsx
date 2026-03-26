@@ -50,7 +50,7 @@ export default function CommentSection({ postId }: { postId: string }) {
         ) : (
           <>
             {comments.map((comment) => (
-              <div key={comment._id} className="text-sm bg-gray-700/50 p-3 rounded-lg">
+              <div key={comment._id} className="text-sm bg-[#1e1e2e]/50 p-3 rounded-lg">
                 <p>
                   <span className="font-semibold text-white mr-2">{comment.authorName}</span>
                   <span className="text-gray-400">

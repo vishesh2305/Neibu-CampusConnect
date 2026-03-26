@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUserStore } from '@/store/userStore';
 
 export default function CreateGroupForm() {
   const [name, setName] = useState('');
@@ -12,6 +13,7 @@ export default function CreateGroupForm() {
   const [error, setError] = useState('');
 
   const router = useRouter();
+  const { socket } = useUserStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +32,9 @@ export default function CreateGroupForm() {
       });
 
       if (res.ok) {
-        router.refresh(); 
+        const newGroup = await res.json();
+        socket?.emit("send-new-group", newGroup);
+        router.refresh();
         setName('');
         setDescription('');
       } else {
@@ -46,20 +50,40 @@ export default function CreateGroupForm() {
   };
 
   return (
-    <div className=" p-6 rounded-lg shadow-lg">
+    <div className="p-6 rounded-xl bg-[#1e1e2e] border border-[#2e2e3e]">
         <h2 className="text-xl font-bold mb-4 text-white">Create a New Group</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-300">Group Name</label>
-                <input type="text" name="name" id="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-1 block w-full shadow-lg  border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" />
+                <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">Group Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-[#12121a] border border-[#2e2e3e] rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-colors"
+                  placeholder="e.g., Computer Science Study Group"
+                />
             </div>
             <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-300">Description</label>
-                <textarea name="description" id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="mt-1 block w-full shadow-lg border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                <textarea
+                  name="description"
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="w-full bg-[#12121a] border border-[#2e2e3e] rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-colors resize-none"
+                  placeholder="What's this group about?"
+                />
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-red-400 text-sm">{error}</p>}
             <div className="flex justify-end">
-                <button type="submit" disabled={loading} className="px-4 py-2 bg-gray-700 hover:bg-gray-900 hover:cursor-pointer rounded-md text-white font-medium disabled:opacity-50">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white font-semibold disabled:opacity-50 transition-colors"
+                >
                     {loading ? 'Creating...' : 'Create Group'}
                 </button>
             </div>

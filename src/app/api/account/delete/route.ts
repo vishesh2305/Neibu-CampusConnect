@@ -44,14 +44,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Incorrect password.' }, { status: 403 });
     }
 
-    // --- Data Deletion ---
-    // This is where you would cascade delete all of the user's data.
-    // For example:
-    await db.collection('posts').deleteMany({ authorId: userId });
-    await db.collection('comments').deleteMany({ authorId: userId });
-    await db.collection('likes').deleteMany({ userId: userId });
-    await db.collection('followers').deleteMany({ $or: [{ followerId: userId }, { followingId: userId }] });
-    // ... delete from other collections like groups, events, rsvps, etc.
+    // --- Cascade Data Deletion ---
+    // Delete all user-related data before removing the user account
+    await Promise.all([
+      db.collection('posts').deleteMany({ authorId: userId }),
+      db.collection('comments').deleteMany({ authorId: userId }),
+      db.collection('likes').deleteMany({ userId: userId }),
+      db.collection('followers').deleteMany({ $or: [{ followerId: userId }, { followingId: userId }] }),
+      db.collection('group_members').deleteMany({ userId: userId }),
+      db.collection('notifications').deleteMany({ userId: userId }),
+      db.collection('messages').deleteMany({ senderId: userId }),
+      db.collection('conversations').deleteMany({ participants: userId }),
+      db.collection('stories').deleteMany({ userId: userId }),
+      db.collection('marketplace').deleteMany({ sellerId: userId }),
+      db.collection('lost_found').deleteMany({ reporterId: userId }),
+    ]);
 
     // Finally, delete the user themselves
     await db.collection('users').deleteOne({ _id: userId });

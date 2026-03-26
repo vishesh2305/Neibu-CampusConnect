@@ -75,7 +75,7 @@ export default function Post({
   })();
 
   return (
-    <div className="p-4 rounded-lg shadow-md border border-gray-700">
+    <div className="p-5 rounded-xl bg-[#1e1e2e] border border-[#2e2e3e] hover:border-[#3e3e4e] transition-colors">
       <div className="flex justify-between items-start">
         <div className="flex items-center mb-3">
           <Image
@@ -86,16 +86,16 @@ export default function Post({
             className="w-10 h-10 rounded-full bg-gray-600 mr-3 object-cover"
           />
           <div>
-            <Link href={`/profile/${post.authorId}`} className="font-semibold text-white hover:underline">
+            <Link href={`/profile/${post.authorId}`} className="font-semibold text-white hover:text-emerald-400 transition-colors">
               {post.authorName}
             </Link>
-            <p className="text-xs text-gray-400">{formattedTime}</p>
+            <p className="text-xs text-gray-500">{formattedTime}</p>
           </div>
         </div>
         {canDelete && (
           <button
             onClick={handleDelete}
-            className="p-1 text-gray-500 hover:text-red-500 rounded-full transition-colors"
+            className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
             title="Delete post"
           >
             <TrashIcon className="h-5 w-5" />
@@ -115,11 +115,11 @@ export default function Post({
           />
         </div>
       )}
-      <div className="border-t border-gray-700 pt-2 flex items-center gap-4">
+      <div className="border-t border-[#2e2e3e] pt-3 flex items-center gap-4">
         <LikeButton postId={post._id} initialLikes={post.likesCount || 0} isLiked={post.isLiked || false} />
         <button
           onClick={() => setShowComments(!showComments)}
-          className="flex items-center space-x-2 text-gray-400 hover:text-white hover:cursor-pointer transition-colors"
+          className="flex items-center space-x-2 text-gray-500 hover:text-amber-400 hover:cursor-pointer transition-colors"
         >
           <ChatBubbleOvalLeftEllipsisIcon className="h-6 w-6" />
           <span className="text-sm font-medium">{post.commentsCount || 0}</span>
